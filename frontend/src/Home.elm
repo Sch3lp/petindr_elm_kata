@@ -4,12 +4,17 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
+import Pets exposing (..)
 
 -- Define your messages
-type Msg = ShowInfo 
+type Msg = 
+    ShowInfo
+  | Like
+  | Dislike  
 -- Setup your model
 type alias Model =
     { showProfileText : Bool
+    , nextPets : List Pet
     , currentPet :
         { id : Int
         , name : String
@@ -23,6 +28,7 @@ type alias Model =
 initialModel: Model 
 initialModel =
     { showProfileText = False
+    , nextPets = nextPets
     , currentPet =
         { id = 1
         , name = "BellyBell"
@@ -36,9 +42,15 @@ initialModel =
 update: Msg -> Model -> Model
 update msg model = 
     case msg of
-        ShowInfo ->
-        { model | showProfileText = not model.showProfileText }
+        ShowInfo -> { model | showProfileText = not model.showProfileText }
+        Like -> nextPet model
+        Dislike -> nextPet model
 
+nextPet: Model -> Model
+nextPet model = 
+    case model.nextPets of
+        h :: t -> { model | currentPet = h, nextPets = t}
+        [] -> { model | nextPets = []}
 
 -- Define a view function
 view: Model -> Html Msg
@@ -71,7 +83,7 @@ view model =
                 ]
             ]
         , div [ class "button-group" ]
-            [ button [ class "button-round button-primary button-big icon-x" ]
+            [ button [ class "button-round button-primary button-big icon-x", onClick Dislike ]
                 [ img [ src "/styling/images/x-icon.png" ]
                     []
                 ]
@@ -79,7 +91,7 @@ view model =
                 [ img [ src "/styling/images/i-icon.png" ]
                     []
                 ]
-            , button [ class "button-round button-primary button-big" ]
+            , button [ class "button-round button-primary button-big", onClick Like ]
                 [ img [ src "/styling/images/like-icon.png" ]
                     []
                 ]
