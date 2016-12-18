@@ -10,7 +10,6 @@ import Pets exposing (..)
 subscriptions : Model -> Sub Msg
 subscriptions model = Sub.none
 
--- main
 main =
     program
         { init = init
@@ -22,12 +21,10 @@ main =
 init: (Model, Cmd Msg)
 init = (initialModel, Cmd.none)
 
--- Define your messages
 type Msg = ShowInfo
          | Like
          | Dislike
 
--- Setup your model
 type alias Model =
     { showProfileText : Bool
     , nextPets : List Pet
@@ -40,7 +37,6 @@ type alias Model =
         }
     }
 
--- initialModel =
 initialModel: Model 
 initialModel =
     { showProfileText = False
@@ -56,7 +52,6 @@ initialModel =
         }
     }
 
--- Define an update function
 update: Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
     case msg of
@@ -70,7 +65,6 @@ nextPet model =
         h :: t -> { model | currentPet = h, nextPets = t }
         [] -> { model | nextPets = [] }
 
--- Define a view function
 view: Model -> Html Msg
 view model = 
     div []
