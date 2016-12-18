@@ -7,10 +7,10 @@ import Html.Events exposing (..)
 import Pets exposing (..)
 
 -- Define your messages
-type Msg = 
-    ShowInfo
-  | Like
-  | Dislike  
+type Msg = ShowInfo
+         | Like
+         | Dislike
+
 -- Setup your model
 type alias Model =
     { showProfileText : Bool
@@ -33,7 +33,9 @@ initialModel =
         { id = 1
         , name = "BellyBell"
         , distance = 24
-        , text = "Look at this face. Is this not the derpiest face you have ever seen? This is Bluebell, the chicken who acts like a dog and thinks she’s people. Bluebell’s you’re in the backyard relaxing in your lounge chair, you can count on Bluebell to be nearby, napping in the grass at your feet."
+        , text = """Look at this face. 
+        Is this not the derpiest face you have ever seen? This is Bluebell, the chicken who acts like a dog and thinks she’s people. 
+        Bluebell’s you’re in the backyard relaxing in your lounge chair, you can count on Bluebell to be nearby, napping in the grass at your feet."""
         , photoUrl = "http://localhost:3000/profiles/bluebell1.jpg"
         }
     }
@@ -98,7 +100,6 @@ view model =
             ]
         ]
     ]
-
 
 -- main
 main =
