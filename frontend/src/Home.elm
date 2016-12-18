@@ -6,6 +6,22 @@ import Html.Events exposing (..)
 
 import Pets exposing (..)
 
+
+subscriptions : Model -> Sub Msg
+subscriptions model = Sub.none
+
+-- main
+main =
+    program
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
+
+init: (Model, Cmd Msg)
+init = (initialModel, Cmd.none)
+
 -- Define your messages
 type Msg = ShowInfo
          | Like
@@ -41,12 +57,12 @@ initialModel =
     }
 
 -- Define an update function
-update: Msg -> Model -> Model
+update: Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
     case msg of
-        ShowInfo -> { model | showProfileText = not model.showProfileText }
-        Like -> nextPet model
-        Dislike -> nextPet model
+        ShowInfo -> ({ model | showProfileText = not model.showProfileText }, Cmd.none)
+        Like -> (nextPet model, Cmd.none)
+        Dislike -> (nextPet model, Cmd.none)
 
 nextPet: Model -> Model
 nextPet model = 
@@ -100,11 +116,3 @@ view model =
             ]
         ]
     ]
-
--- main
-main =
-    beginnerProgram
-        { model = initialModel
-        , view = view
-        , update = update
-        }
