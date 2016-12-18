@@ -49,8 +49,8 @@ update msg model =
 nextPet: Model -> Model
 nextPet model = 
     case model.nextPets of
-        h :: t -> { model | currentPet = h, nextPets = t}
-        [] -> { model | nextPets = []}
+        h :: t -> { model | currentPet = h, nextPets = t }
+        [] -> { model | nextPets = [] }
 
 -- Define a view function
 view: Model -> Html Msg
