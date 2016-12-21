@@ -21,9 +21,10 @@ main =
         }
 
 type Msg = ShowInfo
-         | Like
-         | Dislike
-         | Matched (Result Http.Error Bool)
+        | BackFromMatched
+        | Like
+        | Dislike
+        | Matched (Result Http.Error Bool)
 
 type alias Model =
     { showProfileText : Bool
@@ -79,10 +80,12 @@ update: Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
     case msg of
         ShowInfo -> ({ model | showProfileText = not model.showProfileText }, Cmd.none)
+        BackFromMatched -> (nextPet model, Cmd.none)
         Like -> (model, like (toString model.currentPet.id))
-        Dislike -> nextPet model
-        Matched (Ok matchResult) -> nextPet {model | matched = matchResult }
-        Matched (Err _) -> nextPet model
+        Dislike -> (nextPet model, Cmd.none)
+        Matched (Ok True) -> ({ model | matched = True }, Cmd.none)
+        Matched (Ok False) -> (nextPet model, Cmd.none)
+        Matched (Err _) -> (nextPet model, Cmd.none)
 
 like: String -> Cmd Msg
 like petId =
@@ -92,14 +95,15 @@ like petId =
     in
         Http.send Matched request
 
-nextPet: Model -> (Model, Cmd Msg)
+nextPet: Model -> Model
 nextPet model = 
     case model.nextPets of
-        h :: t -> ({ model | currentPet = h, nextPets = t }, Cmd.none)
-        [] -> ({ model | nextPets = [] }, Cmd.none)
+        h :: t -> reset { model | currentPet = h, nextPets = t }
+        [] -> reset { model | nextPets = [] }
 
-
-
+reset: Model -> Model
+reset model = 
+    { model | matched = False, showProfileText = False }
 
 view: Model -> Html Msg
 view model = 
@@ -163,7 +167,7 @@ view model =
                 [ span [ class "button-chat" ]
                     [ text "Send message" ]
                 ]
-            , button [ class "button-square button-secundary" ]
+            , button [ class "button-square button-secundary", onClick BackFromMatched ]
                 [ span [ class "button-goback" ]
                     [ text "Go back" ]
                 ]
