@@ -63,6 +63,7 @@ initialize pets =
             { showProfileText = False
             , matched = False
             , nextPets = []
+            -- TODO: change this to a Maybe Pet
             , currentPet = 
                 { id = 0
                 , name = ""
