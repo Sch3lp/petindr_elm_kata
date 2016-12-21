@@ -11,7 +11,7 @@ type alias Pet =
 
 nextPets : List Pet
 nextPets =
-    [ babyChicken, burt, bluebell, missPoes, cricket, mrFuzz, lady, grumpy, bobby ]
+    [ princess, babyChicken, burt, bluebell, missPoes, cricket, mrFuzz, lady, grumpy, bobby ]
 
 princess : Pet
 princess =

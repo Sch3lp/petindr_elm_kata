@@ -3,6 +3,8 @@ module Home exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Http exposing (..)
+import Json.Decode exposing (..)
 
 import Pets exposing (..)
 
@@ -18,15 +20,14 @@ main =
         , subscriptions = subscriptions
         }
 
-init: (Model, Cmd Msg)
-init = (initialModel, Cmd.none)
-
 type Msg = ShowInfo
          | Like
          | Dislike
+         | Matched (Result Http.Error Bool)
 
 type alias Model =
     { showProfileText : Bool
+    , matched : Bool
     , nextPets : List Pet
     , currentPet :
         { id : Int
@@ -37,38 +38,73 @@ type alias Model =
         }
     }
 
-initialModel: Model 
-initialModel =
-    { showProfileText = False
-    , nextPets = nextPets
-    , currentPet =
-        { id = 1
-        , name = "BellyBell"
-        , distance = 24
-        , text = """Look at this face. 
-        Is this not the derpiest face you have ever seen? This is Bluebell, the chicken who acts like a dog and thinks she’s people. 
-        Bluebell’s you’re in the backyard relaxing in your lounge chair, you can count on Bluebell to be nearby, napping in the grass at your feet."""
-        , photoUrl = "http://localhost:3000/profiles/bluebell1.jpg"
-        }
-    }
+
+
+
+init: (Model, Cmd Msg)
+init = (initialize Pets.nextPets, Cmd.none)
+
+initialize: List Pet -> Model
+initialize pets = 
+    case pets of
+      h::t ->
+        let
+          initialModel = 
+            { showProfileText = False
+            , matched = False
+            , nextPets = t
+            , currentPet = h
+            }
+        in initialModel
+      [] ->
+        let
+          initialModel = 
+            { showProfileText = False
+            , matched = False
+            , nextPets = []
+            , currentPet = 
+                { id = 0
+                , name = ""
+                , distance = 0
+                , text = ""
+                , photoUrl = ""
+                } 
+            }
+        in initialModel
+
+
+
 
 update: Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
     case msg of
         ShowInfo -> ({ model | showProfileText = not model.showProfileText }, Cmd.none)
-        Like -> (nextPet model, Cmd.none)
-        Dislike -> (nextPet model, Cmd.none)
+        Like -> (model, like (toString model.currentPet.id))
+        Dislike -> nextPet model
+        Matched (Ok matchResult) -> nextPet {model | matched = matchResult }
+        Matched (Err _) -> nextPet model
 
-nextPet: Model -> Model
+like: String -> Cmd Msg
+like petId =
+    let
+        url = "http://localhost:3000/api/pets/"++petId
+        request = Http.post url Http.emptyBody Json.Decode.bool
+    in
+        Http.send Matched request
+
+nextPet: Model -> (Model, Cmd Msg)
 nextPet model = 
     case model.nextPets of
-        h :: t -> { model | currentPet = h, nextPets = t }
-        [] -> { model | nextPets = [] }
+        h :: t -> ({ model | currentPet = h, nextPets = t }, Cmd.none)
+        [] -> ({ model | nextPets = [] }, Cmd.none)
+
+
+
 
 view: Model -> Html Msg
 view model = 
     div []
-    [ header []
+    [ Html.header []
         [ span [ class "header-title" ]
             [ text "Petindr" ]
         , button [ class "icon-right chat-icon" ]
@@ -109,4 +145,29 @@ view model =
                 ]
             ]
         ]
+        , if model.matched then 
+        div [ class "overlay" ]
+            [ div []
+                [ div [ class "match-title" ]
+                    [ text "It's a match!" ]
+                , div [ class "match-details" ]
+                    [ text (("You and "++model.currentPet.name)++" have liked each other") ]
+                ]
+            , div [ class "match-profiles" ]
+                [ img [ class "match-profile", src "http://localhost:3000/profiles/self-profile.png" ]
+                    []
+                , img [ class "match-profile", src model.currentPet.photoUrl ]
+                    []
+                ]
+            , button [ class "button-square button-primary" ]
+                [ span [ class "button-chat" ]
+                    [ text "Send message" ]
+                ]
+            , button [ class "button-square button-secundary" ]
+                [ span [ class "button-goback" ]
+                    [ text "Go back" ]
+                ]
+            ]
+        else
+            div [] []
     ]
