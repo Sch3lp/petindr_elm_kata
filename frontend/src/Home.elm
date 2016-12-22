@@ -24,7 +24,7 @@ type alias Model =
     { showProfileText : Bool
     , matched : Bool
     , nextPets : List Pet
-    , currentPet :
+    , currentPet : Maybe 
         { id : Int
         , name : String
         , distance : Int
@@ -48,7 +48,7 @@ initialize pets =
             { showProfileText = False
             , matched = False
             , nextPets = t
-            , currentPet = h
+            , currentPet = Just h
             }
         in initialModel
       [] ->
@@ -57,14 +57,7 @@ initialize pets =
             { showProfileText = False
             , matched = False
             , nextPets = []
-            -- TODO: change this to a Maybe Pet
-            , currentPet = 
-                { id = 0
-                , name = ""
-                , distance = 0
-                , text = ""
-                , photoUrl = ""
-                } 
+            , currentPet = Nothing
             }
         in initialModel
 
@@ -96,7 +89,10 @@ nextPet: EventHandler
 nextPet model = (nextPetAndReset model, Cmd.none)
 
 liked: EventHandler
-liked model = (model, like (toString model.currentPet.id))
+liked model = 
+    case model.currentPet of
+        Just pet -> (model, like (toString pet.id))
+        Nothing -> (model, Cmd.none)
 
 matched: EventHandler
 matched model = ({ model | matched = True }, Cmd.none)
@@ -115,8 +111,8 @@ like petId =
 nextPetAndReset: Model -> Model
 nextPetAndReset model = 
     case model.nextPets of
-        h :: t -> reset { model | currentPet = h, nextPets = t }
-        [] -> reset { model | nextPets = [] }
+        h :: t -> reset { model | currentPet = Just h, nextPets = t }
+        [] -> reset { model | currentPet = Nothing, nextPets = [] }
 
 reset: Model -> Model
 reset model = 
@@ -128,71 +124,82 @@ reset model =
 
 view: Model -> Html Event
 view model = 
-    div []
-    [ Html.header []
-        [ span [ class "header-title" ]
-            [ text "Petindr" ]
-        , button [ class "icon-right chat-icon" ]
-            []
-        ]
-    , div [ class "container main-container" ]
-        [ div [ class "profiles" ]
-            [ div [ class "profile" ]
-                [ div []
-                    [ img [ src model.currentPet.photoUrl ]
+    let
+        currentPet = 
+            case model.currentPet of 
+                Just pet -> pet
+                Nothing ->  { id = 0
+                            , name = ""
+                            , distance = 0
+                            , text = ""
+                            , photoUrl = ""
+                            }
+    in
+        div []
+        [ Html.header []
+            [ span [ class "header-title" ]
+                [ text "Petindr" ]
+            , button [ class "icon-right chat-icon" ]
+                []
+            ]
+        , div [ class "container main-container" ]
+            [ div [ class "profiles" ]
+                [ div [ class "profile" ]
+                    [ div []
+                        [ img [ src currentPet.photoUrl ]
+                            []
+                        , if model.showProfileText then
+                            div [ class "profile-text" ]
+                                [ text currentPet.text ]
+                        else
+                            div [] []
+                        ]
+                    , div [ class "identification" ]
+                        [ span [ class "identification-name" ]
+                            [ text currentPet.name ]
+                        , span [ class "identification-distance" ]
+                            [ text ((toString currentPet.distance)++"km") ]
+                        ]
+                    ]
+                ]
+            , div [ class "button-group" ]
+                [ button [ class "button-round button-primary button-big icon-x", onClick DislikeWasClicked ]
+                    [ img [ src "/styling/images/x-icon.png" ]
                         []
-                    , if model.showProfileText then
-                        div [ class "profile-text" ]
-                            [ text model.currentPet.text ]
-                      else
-                        div [] []
                     ]
-                , div [ class "identification" ]
-                    [ span [ class "identification-name" ]
-                        [ text model.currentPet.name ]
-                    , span [ class "identification-distance" ]
-                        [ text ((toString model.currentPet.distance)++"km") ]
+                , button [ class "button-round button-primary button-small button-front", onClick ShowInfoWasClicked ]
+                    [ img [ src "/styling/images/i-icon.png" ]
+                        []
+                    ]
+                , button [ class "button-round button-primary button-big", onClick LikeWasClicked ]
+                    [ img [ src "/styling/images/like-icon.png" ]
+                        []
                     ]
                 ]
             ]
-        , div [ class "button-group" ]
-            [ button [ class "button-round button-primary button-big icon-x", onClick DislikeWasClicked ]
-                [ img [ src "/styling/images/x-icon.png" ]
-                    []
+            , if model.matched then 
+            div [ class "overlay" ]
+                [ div []
+                    [ div [ class "match-title" ]
+                        [ text "It's a match!" ]
+                    , div [ class "match-details" ]
+                        [ text (("You and "++currentPet.name)++" have like each other") ]
+                    ]
+                , div [ class "match-profiles" ]
+                    [ img [ class "match-profile", src "http://localhost:3000/profiles/self-profile.png" ]
+                        []
+                    , img [ class "match-profile", src currentPet.photoUrl ]
+                        []
+                    ]
+                , button [ class "button-square button-primary" ]
+                    [ span [ class "button-chat" ]
+                        [ text "Send message" ]
+                    ]
+                , button [ class "button-square button-secundary", onClick BackWasClickedFromMatched ]
+                    [ span [ class "button-goback" ]
+                        [ text "Go back" ]
+                    ]
                 ]
-            , button [ class "button-round button-primary button-small button-front", onClick ShowInfoWasClicked ]
-                [ img [ src "/styling/images/i-icon.png" ]
-                    []
-                ]
-            , button [ class "button-round button-primary button-big", onClick LikeWasClicked ]
-                [ img [ src "/styling/images/like-icon.png" ]
-                    []
-                ]
-            ]
+            else
+                div [] []
         ]
-        , if model.matched then 
-        div [ class "overlay" ]
-            [ div []
-                [ div [ class "match-title" ]
-                    [ text "It's a match!" ]
-                , div [ class "match-details" ]
-                    [ text (("You and "++model.currentPet.name)++" have like each other") ]
-                ]
-            , div [ class "match-profiles" ]
-                [ img [ class "match-profile", src "http://localhost:3000/profiles/self-profile.png" ]
-                    []
-                , img [ class "match-profile", src model.currentPet.photoUrl ]
-                    []
-                ]
-            , button [ class "button-square button-primary" ]
-                [ span [ class "button-chat" ]
-                    [ text "Send message" ]
-                ]
-            , button [ class "button-square button-secundary", onClick BackWasClickedFromMatched ]
-                [ span [ class "button-goback" ]
-                    [ text "Go back" ]
-                ]
-            ]
-        else
-            div [] []
-    ]
