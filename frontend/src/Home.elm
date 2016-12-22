@@ -20,12 +20,6 @@ main =
         , subscriptions = subscriptions
         }
 
-type Event = ShowInfoWasClicked
-        | BackWasClickedFromMatched
-        | LikeWasClicked
-        | DislikeWasClicked
-        | Matched (Result Http.Error Bool)
-
 type alias Model =
     { showProfileText : Bool
     , matched : Bool
@@ -76,17 +70,39 @@ initialize pets =
 
 
 
+type Event = ShowInfoWasClicked
+        | BackWasClickedFromMatched
+        | LikeWasClicked
+        | DislikeWasClicked
+        | Matched (Result Http.Error Bool)
 
 update: Event -> Model -> (Model, Cmd Event)
 update event model = 
     case event of
-        ShowInfoWasClicked -> ({ model | showProfileText = not model.showProfileText }, Cmd.none)
-        BackWasClickedFromMatched -> (nextPet model, Cmd.none)
-        LikeWasClicked -> (model, like (toString model.currentPet.id))
-        DislikeWasClicked -> (nextPet model, Cmd.none)
-        Matched (Ok True) -> ({ model | matched = True }, Cmd.none)
-        Matched (Ok False) -> (nextPet model, Cmd.none)
-        Matched (Err _) -> (nextPet model, Cmd.none)
+        ShowInfoWasClicked -> showInfo model
+        BackWasClickedFromMatched -> nextPet model
+        LikeWasClicked -> liked model
+        DislikeWasClicked -> nextPet model
+        Matched (Ok True) -> matched model
+        Matched (Ok False) -> nextPet model
+        Matched (Err _) -> nextPet model
+
+type alias EventHandler = Model -> (Model, Cmd Event)
+
+showInfo: EventHandler
+showInfo model = ({ model | showProfileText = not model.showProfileText }, Cmd.none)
+
+nextPet: EventHandler
+nextPet model = (nextPetAndReset model, Cmd.none)
+
+liked: EventHandler
+liked model = (model, like (toString model.currentPet.id))
+
+matched: EventHandler
+matched model = ({ model | matched = True }, Cmd.none)
+
+
+
 
 like: String -> Cmd Event
 like petId =
@@ -96,8 +112,8 @@ like petId =
     in
         Http.send Matched request
 
-nextPet: Model -> Model
-nextPet model = 
+nextPetAndReset: Model -> Model
+nextPetAndReset model = 
     case model.nextPets of
         h :: t -> reset { model | currentPet = h, nextPets = t }
         [] -> reset { model | nextPets = [] }
@@ -105,6 +121,10 @@ nextPet model =
 reset: Model -> Model
 reset model = 
     { model | matched = False, showProfileText = False }
+
+
+
+
 
 view: Model -> Html Event
 view model = 
