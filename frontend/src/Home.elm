@@ -9,7 +9,7 @@ import Json.Decode exposing (..)
 import Pets exposing (..)
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : Model -> Sub Event
 subscriptions model = Sub.none
 
 main =
@@ -20,10 +20,10 @@ main =
         , subscriptions = subscriptions
         }
 
-type Msg = ShowInfo
-        | BackFromMatched
-        | Like
-        | Dislike
+type Event = ShowInfoWasClicked
+        | BackWasClickedFromMatched
+        | LikeWasClicked
+        | DislikeWasClicked
         | Matched (Result Http.Error Bool)
 
 type alias Model =
@@ -42,7 +42,7 @@ type alias Model =
 
 
 
-init: (Model, Cmd Msg)
+init: (Model, Cmd Event)
 init = (initialize Pets.nextPets, Cmd.none)
 
 initialize: List Pet -> Model
@@ -77,18 +77,18 @@ initialize pets =
 
 
 
-update: Msg -> Model -> (Model, Cmd Msg)
-update msg model = 
-    case msg of
-        ShowInfo -> ({ model | showProfileText = not model.showProfileText }, Cmd.none)
-        BackFromMatched -> (nextPet model, Cmd.none)
-        Like -> (model, like (toString model.currentPet.id))
-        Dislike -> (nextPet model, Cmd.none)
+update: Event -> Model -> (Model, Cmd Event)
+update event model = 
+    case event of
+        ShowInfoWasClicked -> ({ model | showProfileText = not model.showProfileText }, Cmd.none)
+        BackWasClickedFromMatched -> (nextPet model, Cmd.none)
+        LikeWasClicked -> (model, like (toString model.currentPet.id))
+        DislikeWasClicked -> (nextPet model, Cmd.none)
         Matched (Ok True) -> ({ model | matched = True }, Cmd.none)
         Matched (Ok False) -> (nextPet model, Cmd.none)
         Matched (Err _) -> (nextPet model, Cmd.none)
 
-like: String -> Cmd Msg
+like: String -> Cmd Event
 like petId =
     let
         url = "http://localhost:3000/api/pets/"++petId
@@ -106,7 +106,7 @@ reset: Model -> Model
 reset model = 
     { model | matched = False, showProfileText = False }
 
-view: Model -> Html Msg
+view: Model -> Html Event
 view model = 
     div []
     [ Html.header []
@@ -136,15 +136,15 @@ view model =
                 ]
             ]
         , div [ class "button-group" ]
-            [ button [ class "button-round button-primary button-big icon-x", onClick Dislike ]
+            [ button [ class "button-round button-primary button-big icon-x", onClick DislikeWasClicked ]
                 [ img [ src "/styling/images/x-icon.png" ]
                     []
                 ]
-            , button [ class "button-round button-primary button-small button-front", onClick ShowInfo ]
+            , button [ class "button-round button-primary button-small button-front", onClick ShowInfoWasClicked ]
                 [ img [ src "/styling/images/i-icon.png" ]
                     []
                 ]
-            , button [ class "button-round button-primary button-big", onClick Like ]
+            , button [ class "button-round button-primary button-big", onClick LikeWasClicked ]
                 [ img [ src "/styling/images/like-icon.png" ]
                     []
                 ]
@@ -156,7 +156,7 @@ view model =
                 [ div [ class "match-title" ]
                     [ text "It's a match!" ]
                 , div [ class "match-details" ]
-                    [ text (("You and "++model.currentPet.name)++" have liked each other") ]
+                    [ text (("You and "++model.currentPet.name)++" have like each other") ]
                 ]
             , div [ class "match-profiles" ]
                 [ img [ class "match-profile", src "http://localhost:3000/profiles/self-profile.png" ]
@@ -168,7 +168,7 @@ view model =
                 [ span [ class "button-chat" ]
                     [ text "Send message" ]
                 ]
-            , button [ class "button-square button-secundary", onClick BackFromMatched ]
+            , button [ class "button-square button-secundary", onClick BackWasClickedFromMatched ]
                 [ span [ class "button-goback" ]
                     [ text "Go back" ]
                 ]
