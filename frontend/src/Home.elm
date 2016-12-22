@@ -69,7 +69,7 @@ type Event = ShowInfoWasClicked
         | DislikeWasClicked
         | Matched (Result Http.Error Bool)
 
-update: Event -> Model -> (Model, Cmd Event)
+update: Event -> EventHandler
 update event model = 
     case event of
         ShowInfoWasClicked -> showInfo model
