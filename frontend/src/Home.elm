@@ -158,7 +158,11 @@ view model =
                         [ span [ class "identification-name" ]
                             [ text currentPet.name ]
                         , span [ class "identification-distance" ]
-                            [ text ((toString currentPet.distance)++"km") ]
+                            [ text 
+                                (currentPet.distance
+                                    |>toString
+                                    |>(++) "km") 
+                            ]
                         ]
                     ]
                 ]
