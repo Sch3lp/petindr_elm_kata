@@ -8,6 +8,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pets exposing (..)
+import WebSocket
 
 main =
     program
@@ -16,9 +17,6 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
-
-subscriptions : Model -> Sub Event
-subscriptions model = Sub.none
 
 type alias Model = 
     { currentLine: Maybe String
@@ -38,7 +36,7 @@ init =
       model =
       { currentLine = Nothing
       , messages = initDummyMessages
-      , pet = Nothing 
+      , pet = Just initDummyPet 
       } 
     in
       (model, Cmd.none)
@@ -61,26 +59,60 @@ initDummyMessages =
         }
     ]
 
+initDummyPet: Pet
+initDummyPet =
+    { id = 1
+    , name = "Princess"
+    , distance = 20
+    , text = "dummy"
+    , photoUrl = "http://localhost:3000/profiles/princess.jpg"
+    }
+
 type Event = TextTyped String
-           | TextSent
+           | MessageSent
+           | MessageReceived String
 
 update: Event -> EventHandler
 update event model = 
     case event of
         TextTyped text -> textTyped text model
-        TextSent -> textSent model
+        MessageSent -> messageSent model
+        MessageReceived text -> messageReceived text model
         
 type alias EventHandler = Model -> (Model, Cmd Event)
 
 textTyped: String -> EventHandler
 textTyped text model = (\input -> ({model | currentLine = Just input }, Cmd.none)) text
 
-textSent: EventHandler
-textSent model =
+
+messageSent: EventHandler
+messageSent model =
     let
       newMessages = {text=Maybe.withDefault "" model.currentLine, self=True} :: model.messages
     in
-        ({model | messages = newMessages }, Cmd.none)
+      ({model | messages = newMessages }, sendText model.pet model.currentLine)
+
+sendText: Maybe Pet -> Maybe String -> Cmd Event
+sendText pet line =
+    case (pet, line) of
+        (Just pet, Just line)  ->
+            let
+                url = "ws://localhost:3000/api/chat/"++ toString pet.id
+            in
+                WebSocket.send url line
+        (_, _) -> Cmd.none
+      
+messageReceived: String -> EventHandler
+messageReceived text model = 
+    let
+      messages = {text=text, self=False} :: model.messages
+    in
+      ((\input -> {model | messages = input }) messages, Cmd.none)
+
+
+subscriptions : Model -> Sub Event
+subscriptions model =
+    WebSocket.listen "ws://localhost:3000/api/chat/1" MessageReceived
 
 
 view: Model -> Html Event
@@ -100,7 +132,7 @@ view model =
             , div [ class "container chat-container" ] <| List.map mapTextMessage <| List.reverse model.messages
             , div [ class "new-message" ]
                 [ input [ type_ "text", placeholder "enter message", onInput TextTyped ] []
-                , button [ class "button-round button-primary", onClick TextSent ] [ text "Send" ]
+                , button [ class "button-round button-primary", onClick MessageSent ] [ text "Send" ]
                 ]
             ]
 
