@@ -9,6 +9,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pets exposing (..)
 import WebSocket
+import Json.Decode as Json
 
 main =
     program
@@ -71,6 +72,8 @@ initDummyPet =
 type Event = TextTyped String
            | SendMessageClicked
            | MessageReceived String
+           | EnterPressed
+           | NonEvent
 
 type alias EventHandler = Model -> (Model, Cmd Event)
 
@@ -78,14 +81,16 @@ update: Event -> EventHandler
 update event model = 
     case event of
         TextTyped text -> textTyped text model
-        SendMessageClicked -> sendMessageClicked model
-        MessageReceived text -> messageReceived text model        
+        SendMessageClicked -> sendMessage model
+        MessageReceived text -> messageReceived text model  
+        EnterPressed -> sendMessage model      
+        _ -> (model, Cmd.none)      
 
 textTyped: String -> EventHandler
 textTyped text model = (\input -> ({ model | currentLine = input }, Cmd.none)) text
 
-sendMessageClicked: EventHandler
-sendMessageClicked model =
+sendMessage: EventHandler
+sendMessage model =
     let
       currentLine = model.currentLine
       newMessages = { text = currentLine, self = True } :: model.messages
@@ -115,6 +120,15 @@ subscriptions : Model -> Sub Event
 subscriptions model =
     WebSocket.listen "ws://localhost:3000/api/chat/1" MessageReceived
 
+onKeyDown: (Int -> Event) -> Attribute Event
+onKeyDown tagger =
+  on "keydown" (Json.map tagger keyCode)
+
+checkEnter: Int -> Event
+checkEnter keyCode =
+    case keyCode of
+        13 -> EnterPressed
+        _  -> NonEvent
 
 view: Model -> Html Event
 view model = 
@@ -132,7 +146,7 @@ view model =
                 ]
             , div [ class "container chat-container" ] <| List.map mapTextMessage <| List.reverse model.messages
             , div [ class "new-message" ]
-                [ input [ type_ "text", value model.currentLine, placeholder "enter message", onInput TextTyped ] []
+                [ input [ type_ "text", value model.currentLine, placeholder "enter message", onInput TextTyped, onKeyDown checkEnter] []
                 , button [ class "button-round button-primary", onClick SendMessageClicked ] [ text "Send" ]
                 ]
             ]
