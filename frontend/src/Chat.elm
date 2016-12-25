@@ -95,6 +95,7 @@ sendMessageClicked model =
 sendText: Maybe Pet -> String -> Cmd Event
 sendText pet line =
     case (pet, line) of
+        (Just pet, "") -> Cmd.none
         (Just pet, line) ->
             let
                 url = "ws://localhost:3000/api/chat/" ++ toString pet.id
