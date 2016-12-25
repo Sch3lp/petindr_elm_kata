@@ -47,33 +47,40 @@ init =
 initDummyMessages: List Message
 initDummyMessages = 
     [
-        { text= "Hi Princess!"
-        , self= True
-        },
-        { text= "bok"
+        { text= "Bokbok!"
         , self= False
         },
         { text= "You want a berry?"
         , self= True
         },
-        { text= "Bokbok!"
+        { text= "bok"
         , self= False
+        },
+        { text= "Hi Princess!"
+        , self= True
         }
     ]
 
 type Event = TextTyped String
+           | TextSent
 
 update: Event -> EventHandler
 update event model = 
     case event of
         TextTyped text -> textTyped text model
+        TextSent -> textSent model
         
 type alias EventHandler = Model -> (Model, Cmd Event)
 
 textTyped: String -> EventHandler
 textTyped text model = (\input -> ({model | currentLine = Just input }, Cmd.none)) text
 
-
+textSent: EventHandler
+textSent model =
+    let
+      newMessages = {text=Maybe.withDefault "" model.currentLine, self=True} :: model.messages
+    in
+        ({model | messages = newMessages }, Cmd.none)
 
 
 view: Model -> Html Event
@@ -90,18 +97,14 @@ view model =
                 , img [ class "header-profile-image", src photoUrl ]
                     []
                 ]
-            , div [ class "container chat-container" ] (mapTextMessages model.messages)
+            , div [ class "container chat-container" ] <| List.map mapTextMessage model.messages
             , div [ class "new-message" ]
                 [ input [ type_ "text", placeholder "enter message", onInput TextTyped ]
                     []
-                , button [ class "button-round button-primary" ]
+                , button [ class "button-round button-primary", onClick TextSent ]
                     [ text "Send" ]
                 ]
             ]
-
-mapTextMessages: List Message -> List (Html.Html msg)
-mapTextMessages messages =
-    List.map mapTextMessage messages
 
 mapTextMessage: Message -> Html.Html msg
 mapTextMessage message =
