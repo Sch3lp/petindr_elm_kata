@@ -97,7 +97,7 @@ view model =
                 , img [ class "header-profile-image", src photoUrl ]
                     []
                 ]
-            , div [ class "container chat-container" ] <| List.map mapTextMessage model.messages
+            , div [ class "container chat-container" ] <| List.map mapTextMessage <| List.reverse model.messages
             , div [ class "new-message" ]
                 [ input [ type_ "text", placeholder "enter message", onInput TextTyped ]
                     []
