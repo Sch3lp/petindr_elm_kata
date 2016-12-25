@@ -62,7 +62,7 @@ textTyped text model = (\input -> ({model | currentLine = Just input }, Cmd.none
 view: Model -> Html Event
 view model = 
     let
-        photoUrl = Maybe.withDefault "" (Maybe.map .photoUrl model.pet)
+        photoUrl = Maybe.map .photoUrl model.pet |> Maybe.withDefault "http://localhost:3000/profiles/self-profile.png"
     in
         div [ class "body" ]
             [ header []
