@@ -19,7 +19,7 @@ main =
         }
 
 type alias Model = 
-    { currentLine: Maybe String
+    { currentLine: String
     , messages: List Message
     , pet: Maybe Pet
     }
@@ -34,7 +34,7 @@ init: (Model, Cmd Event)
 init = 
     let
       model =
-      { currentLine = Nothing
+      { currentLine = ""
       , messages = initDummyMessages
       , pet = Just initDummyPet 
       } 
@@ -69,39 +69,39 @@ initDummyPet =
     }
 
 type Event = TextTyped String
-           | MessageSent
+           | SendMessageClicked
            | MessageReceived String
+
+type alias EventHandler = Model -> (Model, Cmd Event)
 
 update: Event -> EventHandler
 update event model = 
     case event of
         TextTyped text -> textTyped text model
-        MessageSent -> messageSent model
-        MessageReceived text -> messageReceived text model
-        
-type alias EventHandler = Model -> (Model, Cmd Event)
+        SendMessageClicked -> sendMessageClicked model
+        MessageReceived text -> messageReceived text model        
 
 textTyped: String -> EventHandler
-textTyped text model = (\input -> ({model | currentLine = Just input }, Cmd.none)) text
+textTyped text model = (\input -> ({ model | currentLine = input }, Cmd.none)) text
 
-
-messageSent: EventHandler
-messageSent model =
+sendMessageClicked: EventHandler
+sendMessageClicked model =
     let
-      newMessages = {text=Maybe.withDefault "" model.currentLine, self=True} :: model.messages
+      currentLine = model.currentLine
+      newMessages = { text = currentLine, self = True } :: model.messages
     in
-      ({model | messages = newMessages }, sendText model.pet model.currentLine)
+      ({ model | messages = newMessages, currentLine = "" }, sendText model.pet currentLine)
 
-sendText: Maybe Pet -> Maybe String -> Cmd Event
+sendText: Maybe Pet -> String -> Cmd Event
 sendText pet line =
     case (pet, line) of
-        (Just pet, Just line)  ->
+        (Just pet, line) ->
             let
-                url = "ws://localhost:3000/api/chat/"++ toString pet.id
+                url = "ws://localhost:3000/api/chat/" ++ toString pet.id
             in
                 WebSocket.send url line
         (_, _) -> Cmd.none
-      
+
 messageReceived: String -> EventHandler
 messageReceived text model = 
     let
@@ -131,8 +131,8 @@ view model =
                 ]
             , div [ class "container chat-container" ] <| List.map mapTextMessage <| List.reverse model.messages
             , div [ class "new-message" ]
-                [ input [ type_ "text", placeholder "enter message", onInput TextTyped ] []
-                , button [ class "button-round button-primary", onClick MessageSent ] [ text "Send" ]
+                [ input [ type_ "text", value model.currentLine, placeholder "enter message", onInput TextTyped ] []
+                , button [ class "button-round button-primary", onClick SendMessageClicked ] [ text "Send" ]
                 ]
             ]
 
