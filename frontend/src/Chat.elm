@@ -37,12 +37,29 @@ init =
     let
       model =
       { currentLine = Nothing
-      , messages = []
+      , messages = initDummyMessages
       , pet = Nothing 
       } 
     in
       (model, Cmd.none)
 
+
+initDummyMessages: List Message
+initDummyMessages = 
+    [
+        { text= "Hi Princess!"
+        , self= True
+        },
+        { text= "bok"
+        , self= False
+        },
+        { text= "You want a berry?"
+        , self= True
+        },
+        { text= "Bokbok!"
+        , self= False
+        }
+    ]
 
 type Event = TextTyped String
 
@@ -73,24 +90,7 @@ view model =
                 , img [ class "header-profile-image", src photoUrl ]
                     []
                 ]
-            , div [ class "container chat-container" ]
-                [ div [ class "chat-item-self" ]
-                    [ div [ class "chat-item-self-text" ]
-                        [ text "hi Princess!" ]
-                    ]
-                , div [ class "chat-item-other" ]
-                    [ div [ class "chat-item-other-text" ]
-                        [ text "bok" ]
-                    ]
-                , div [ class "chat-item-self" ]
-                    [ div [ class "chat-item-self-text" ]
-                        [ text "do you want a berry?" ]
-                    ]
-                , div [ class "chat-item-other" ]
-                    [ div [ class "chat-item-other-text" ]
-                        [ text "bokbok!" ]
-                    ]
-                ]
+            , div [ class "container chat-container" ] (mapTextMessages model.messages)
             , div [ class "new-message" ]
                 [ input [ type_ "text", placeholder "enter message", onInput TextTyped ]
                     []
@@ -98,3 +98,18 @@ view model =
                     [ text "Send" ]
                 ]
             ]
+
+mapTextMessages: List Message -> List (Html.Html msg)
+mapTextMessages messages =
+    List.map mapTextMessage messages
+
+mapTextMessage: Message -> Html.Html msg
+mapTextMessage message =
+    let
+        classSelf = if message.self then "chat-item-self" else "chat-item-other"
+    in
+        div [ class classSelf ]
+            [ div [ class (classSelf++"-text") ]
+                [ text message.text ]
+            ]
+                
