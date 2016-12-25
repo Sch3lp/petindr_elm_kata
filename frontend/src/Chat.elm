@@ -99,10 +99,8 @@ view model =
                 ]
             , div [ class "container chat-container" ] <| List.map mapTextMessage <| List.reverse model.messages
             , div [ class "new-message" ]
-                [ input [ type_ "text", placeholder "enter message", onInput TextTyped ]
-                    []
-                , button [ class "button-round button-primary", onClick TextSent ]
-                    [ text "Send" ]
+                [ input [ type_ "text", placeholder "enter message", onInput TextTyped ] []
+                , button [ class "button-round button-primary", onClick TextSent ] [ text "Send" ]
                 ]
             ]
 
