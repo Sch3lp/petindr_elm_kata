@@ -74,4 +74,11 @@ Hints:
 - Use the [WebSocket](http://package.elm-lang.org/packages/elm-lang/websocket/latest) module to listen for messages and to send messages.
 
 ## 6. Routing between Home and Chat
-TODO
+
+- We want our two currently separate applications to work as separate pages in one main application.
+- From the matched overlay when clicking on _Send Message_ we want to navigate to the Chat page.
+- From the Chat page when clicking on the back arrow, we want to navigate to the Home page.
+
+Hints:
+- Use the [Navigation](http://package.elm-lang.org/packages/elm-lang/navigation/latest) module to introduce routing.
+- You might want to read the [routing part](https://www.elm-tutorial.org/en/07-routing/01-intro.html) of the [Elm Tutorial](https://www.elm-tutorial.org/).
