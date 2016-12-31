@@ -3,6 +3,8 @@ import Html.Attributes exposing (..)
 import Navigation exposing(..)
 import UrlParser exposing (..)
 
+import Home exposing (view)
+import Chat exposing (view)
 
 main =
   Navigation.program LocationChange
@@ -54,9 +56,9 @@ update msg model =
 view: Model -> Html msg
 view model = 
     div [ class "body" ]
-        <| currentPage model
+        [ currentPage model ]
 
-currentPage: Model -> List (Html msg)
+currentPage: Model -> Html msg
 currentPage model =
     case model.currentRoute of
       HomeRoute -> Home.view model
@@ -78,7 +80,7 @@ currentPage model =
     -- matched overlay
     ]
 -}
-notFoundView: Model -> Html msg
+notFoundView: Html msg
 notFoundView = 
     div [ class "container main-container" ] 
         [ text "Page not found yo" ]

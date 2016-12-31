@@ -1,8 +1,4 @@
--- import Tasks exposing(..)
--- import Date exposing (Date)
--- now: Cmd Event
--- now = 
---   Task.perform (always (SetDate Nothing)) (Just >> SetDate) Date.now
+module Chat exposing (view)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
