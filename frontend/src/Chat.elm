@@ -152,7 +152,7 @@ messageReceived text model =
 
 subscriptions : Model -> Sub Event
 subscriptions model =
-    WebSocket.listen "ws://localhost:3000/api/chat/1" MessageReceived
+    WebSocket.listen ((++) "ws://localhost:3000/api/chat/" <| toString <| Maybe.withDefault 0 <| Maybe.map .id model.pet )  MessageReceived
 
 onKeyDown: (Int -> Event) -> Attribute Event
 onKeyDown tagger =
