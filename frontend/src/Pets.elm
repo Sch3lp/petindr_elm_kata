@@ -1,4 +1,4 @@
-module Pets exposing (..)
+module Pets exposing ( Pet, nextPets )
 
 
 type alias Pet =
