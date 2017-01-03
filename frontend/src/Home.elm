@@ -24,13 +24,7 @@ type alias Model =
     { showProfileText : Bool
     , matched : Bool
     , nextPets : List Pet
-    , currentPet : Maybe 
-        { id : Int
-        , name : String
-        , distance : Int
-        , text : String
-        , photoUrl : String
-        }
+    , currentPet : Maybe Pet
     }
 
 

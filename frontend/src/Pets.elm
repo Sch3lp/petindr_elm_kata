@@ -1,8 +1,9 @@
-module Pets exposing ( Pet, nextPets )
+module Pets exposing ( Pet, PetId, nextPets )
 
+type alias PetId = Int
 
 type alias Pet =
-    { id : Int
+    { id : PetId
     , name : String
     , distance : Int
     , text : String

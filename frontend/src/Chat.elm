@@ -78,7 +78,7 @@ parseLocation location =
       Just route -> route
       Nothing -> NotFoundRoute
 
-type Route = ChatRoute Int --Refactor to PetId -- Navigation.newUrl "#chat/" ++ petId
+type Route = ChatRoute PetId
            | NotFoundRoute
 
 type Event = TextTyped String
@@ -116,7 +116,7 @@ locationChanged location model =
         , Cmd.none)
 
 -- TODO: replace with http call?
-fetchPet: Int -> Maybe Pet
+fetchPet: PetId -> Maybe Pet
 fetchPet petId = 
     List.filter (\pet -> pet.id == petId) Pets.nextPets |> List.head
 
