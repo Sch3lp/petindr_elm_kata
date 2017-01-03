@@ -152,11 +152,11 @@ messageReceived text model =
 
 subscriptions : Model -> Sub Event
 subscriptions model =
-    WebSocket.listen ((++) "ws://localhost:3000/api/chat/" <| toString <| Maybe.withDefault 0 <| Maybe.map .id model.pet )  MessageReceived
+    WebSocket.listen ( (++) "ws://localhost:3000/api/chat/" <| toString <| Maybe.withDefault 0 <| Maybe.map .id model.pet )  MessageReceived
 
 onKeyDown: (Int -> Event) -> Attribute Event
 onKeyDown tagger =
-  on "keydown" (Json.map tagger keyCode)
+  on "keydown" (Json.map tagger keyCode) --TODO: replace Enter keydown with form submit
 
 checkEnter: Int -> Event
 checkEnter keyCode =
