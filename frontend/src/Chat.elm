@@ -5,7 +5,6 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pets exposing (..)
 import WebSocket
-import Json.Decode as Json
 import Navigation exposing(..)
 import UrlParser exposing (..)
 
@@ -82,10 +81,8 @@ type Route = ChatRoute PetId
            | NotFoundRoute
 
 type Event = TextTyped String
-           | SendMessageClicked
+           | SendMessageActivated
            | MessageReceived String
-           | EnterPressed
-           | NonEvent
            | LocationChange Navigation.Location
 
 type alias EventHandler = Model -> (Model, Cmd Event)
@@ -94,11 +91,9 @@ update: Event -> EventHandler
 update event model = 
     case event of
         TextTyped text -> textTyped text model
-        SendMessageClicked -> sendMessage model
+        SendMessageActivated -> sendMessage model
         MessageReceived text -> messageReceived text model  
-        EnterPressed -> sendMessage model
         LocationChange location -> locationChanged location model
-        _ -> (model, Cmd.none)
 
 locationChanged: Location -> EventHandler
 locationChanged location model =
@@ -154,16 +149,6 @@ subscriptions : Model -> Sub Event
 subscriptions model =
     WebSocket.listen ( (++) "ws://localhost:3000/api/chat/" <| toString <| Maybe.withDefault 0 <| Maybe.map .id model.pet )  MessageReceived
 
-onKeyDown: (Int -> Event) -> Attribute Event
-onKeyDown tagger =
-  on "keydown" (Json.map tagger keyCode) --TODO: replace Enter keydown with form submit
-
-checkEnter: Int -> Event
-checkEnter keyCode =
-    case keyCode of
-        13 -> EnterPressed
-        _  -> NonEvent
-
 view: Model -> Html Event
 view model = 
     case model.pet of
@@ -182,9 +167,9 @@ view model =
                             []
                         ]
                     , div [ class "container chat-container" ] <| List.map mapTextMessage <| List.reverse model.messages
-                    , div [ class "new-message" ]
-                        [ input [ type_ "text", value model.currentLine, placeholder "enter message", onInput TextTyped, onKeyDown checkEnter] []
-                        , button [ class "button-round button-primary", onClick SendMessageClicked ] [ text "Send" ]
+                    , Html.form [ class "new-message", onSubmit SendMessageActivated ]
+                        [ input [ type_ "text", value model.currentLine, placeholder "enter message", onInput TextTyped ] []
+                        , button [ class "button-round button-primary"] [ text "Send" ]
                         ]
                     ]
         Nothing -> 
