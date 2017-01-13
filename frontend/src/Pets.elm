@@ -3,9 +3,7 @@ module Pets exposing ( Pet, PetId (..), nextPets, asInt )
 type PetId = PetId Int
 
 asInt: PetId -> Int
-asInt petId = 
-    case petId of
-      PetId id -> id
+asInt (PetId i) = i
 
 type alias Pet =
     { id : PetId
