@@ -122,7 +122,7 @@ view model =
         currentPet = 
             case model.currentPet of 
                 Just pet -> pet
-                Nothing ->  { id = 0
+                Nothing ->  { id = PetId 0
                             , name = ""
                             , distance = 0
                             , text = ""

@@ -59,7 +59,7 @@ initDummyMessages =
 
 initDummyPet: Pet
 initDummyPet =
-    { id = 1
+    { id = PetId 1
     , name = "Princess"
     , distance = 20
     , text = "dummy"
@@ -69,7 +69,11 @@ initDummyPet =
 routes: Parser (Route -> a) a 
 routes = 
     UrlParser.oneOf
-        [ UrlParser.map ChatRoute (UrlParser.s "chat" </> UrlParser.int) ]
+        [ UrlParser.map ChatRoute <| petIdUrlParser ]
+
+petIdUrlParser: Parser (PetId -> a) a
+petIdUrlParser =
+    UrlParser.map PetId <| UrlParser.s "chat" </> UrlParser.int
 
 parseLocation: Location -> Route
 parseLocation location =
@@ -147,7 +151,7 @@ messageReceived text model =
 
 subscriptions : Model -> Sub Event
 subscriptions model =
-    WebSocket.listen ( (++) "ws://localhost:3000/api/chat/" <| toString <| Maybe.withDefault 0 <| Maybe.map .id model.pet )  MessageReceived
+    WebSocket.listen ( (++) "ws://localhost:3000/api/chat/" <| toString <| Maybe.withDefault 0 <| Maybe.map Pets.asInt <| Maybe.map .id model.pet )  MessageReceived
 
 view: Model -> Html Event
 view model = 

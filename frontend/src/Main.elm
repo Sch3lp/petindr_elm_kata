@@ -5,6 +5,7 @@ import UrlParser exposing (..)
 
 import Home exposing (view)
 import Chat exposing (view)
+import Pets exposing (..)
 
 main =
   Navigation.program LocationChange
@@ -26,7 +27,7 @@ type Msg =
     LocationChange Navigation.Location
 
 type Route = HomeRoute -- Navigation.newUrl "#"
-           | ChatRoute Int --Refactor to PetId -- Navigation.newUrl "#chat/" ++ petId
+           | ChatRoute PetId -- Navigation.newUrl "#chat/" ++ petId
            | NotFoundRoute
 
 routes: Parser (Route -> a) a 
