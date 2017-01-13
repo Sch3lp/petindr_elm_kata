@@ -151,7 +151,14 @@ messageReceived text model =
 
 subscriptions : Model -> Sub Event
 subscriptions model =
-    WebSocket.listen ( (++) "ws://localhost:3000/api/chat/" <| toString <| Maybe.withDefault 0 <| Maybe.map Pets.asInt <| Maybe.map .id model.pet )  MessageReceived
+    WebSocket.listen ( 
+        (++) 
+        "ws://localhost:3000/api/chat/" 
+        <| toString 
+        <| Maybe.withDefault 0 
+        <| Maybe.map (\(PetId id) -> id)
+        <| Maybe.map .id model.pet 
+    )  MessageReceived
 
 view: Model -> Html Event
 view model = 
