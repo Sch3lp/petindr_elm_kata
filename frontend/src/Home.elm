@@ -1,14 +1,9 @@
 module Home exposing (..)
 
-import Pets exposing(..)
-
+import Pets exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-
-
--- Define your messages
--- Setup your model
+import Html.Events exposing (onClick)
 
 
 type alias Model =
@@ -16,7 +11,8 @@ type alias Model =
     , currentPet : Pet
     }
 
-babyChicken: Pet
+
+babyChicken : Pet
 babyChicken =
     { id = 2
     , name = "Baby Chicken"
@@ -26,63 +22,90 @@ babyChicken =
     }
 
 
-initialModel: Model
-initialModel = Model False babyChicken
+initialModel : Model
+initialModel =
+    Model False babyChicken
 
 
-
-view: Model -> Html msg
-view model = 
+view : Model -> Html Msg
+view model =
     let
-        profilePet = model.currentPet
+        profilePet =
+            model.currentPet
+
+        profileText =
+            if model.showProfileText then
+                div [ class "profile-text" ]
+                    [ text profilePet.text ]
+            else
+                div [] []
     in
         div []
-        [ header []
-            [ span [ class "header-title" ]
-                [ text "Petindr" ]
-            , button [ class "icon-right chat-icon" ]
-                []
-            ]
-        , div [ class "container main-container" ]
-            [ div [ class "profiles" ]
-                [ div [ class "profile" ]
-                    [ div []
-                        [ img [ src profilePet.photoUrl ]
+            [ header []
+                [ span [ class "header-title" ]
+                    [ text "Petindr" ]
+                , button [ class "icon-right chat-icon" ]
+                    []
+                ]
+            , div [ class "container main-container" ]
+                [ div [ class "profiles" ]
+                    [ div [ class "profile" ]
+                        [ div []
+                            [ img [ src profilePet.photoUrl ]
+                                []
+                            , profileText
+                            ]
+                        , div [ class "identification" ]
+                            [ span [ class "identification-name" ]
+                                [ text profilePet.name ]
+                            , span [ class "identification-distance" ]
+                                [ text <| toString profilePet.distance ]
+                            ]
+                        ]
+                    ]
+                , div [ class "button-group" ]
+                    [ button [ class "button-round button-primary button-big icon-x" ]
+                        [ img [ src "/styling/images/x-icon.png" ]
                             []
-                        , div [ class "profile-text" ]
-                            [ text profilePet.text ]
                         ]
-                    , div [ class "identification" ]
-                        [ span [ class "identification-name" ]
-                            [ text profilePet.name ]
-                        , span [ class "identification-distance" ]
-                            [ text <| toString profilePet.distance ]
+                    , button
+                        [ class "button-round button-primary button-small button-front"
+                        , onClick InfoButtonClicked
                         ]
-                    ]
-                ]
-            , div [ class "button-group" ]
-                [ button [ class "button-round button-primary button-big icon-x" ]
-                    [ img [ src "/styling/images/x-icon.png" ]
-                        []
-                    ]
-                , button [ class "button-round button-primary button-small button-front" ]
-                    [ img [ src "/styling/images/i-icon.png" ]
-                        []
-                    ]
-                , button [ class "button-round button-primary button-big" ]
-                    [ img [ src "/styling/images/like-icon.png" ]
-                        []
+                        [ img [ src "/styling/images/i-icon.png" ]
+                            []
+                        ]
+                    , button
+                        [ class "button-round button-primary button-big"
+                        , onClick LikeButtonClicked
+                        ]
+                        [ img [ src "/styling/images/like-icon.png" ]
+                            []
+                        ]
                     ]
                 ]
             ]
-        ]
 
 
+type Msg
+    = InfoButtonClicked
+    | LikeButtonClicked
 
-update: msg -> Model -> Model
-update message model = model
 
-main : Program Never Model msg
+update : Msg -> Model -> Model
+update msg model =
+    case msg of
+        InfoButtonClicked ->
+            if model.showProfileText == False then
+                { model | showProfileText = True }
+            else
+                { model | showProfileText = False }
+
+        LikeButtonClicked ->
+            model
+
+
+main : Program Never Model Msg
 main =
     beginnerProgram
         { model = initialModel
