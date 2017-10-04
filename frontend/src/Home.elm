@@ -1,37 +1,24 @@
 module Home exposing (..)
 
+import Pets exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
 
--- Define your messages
--- Setup your model
-
-
 type alias Model =
     { showProfileText : Bool
-    , currentPet :
-        { id : Int
-        , name : String
-        , distance : Int
-        , text : String
-        , photoUrl : String
-        }
+    , currentPet : Pet
+    , nextPets : List Pet
     }
 
 
+initialModel : Model
 initialModel =
     { showProfileText = False
-    , currentPet =
-        { id = 2
-        , name = "Baby Chicken"
-        , distance = 42
-        , text = "Meet Baby Chicken. She’s got a whole lot of personality packed into a mere 500 feathered grams. When she lays an egg, she’s putting out a whopping 10% of her body weight. That’s hardcore! Because she’s so tiny and round as a meatball, Baby Chicken has got that whole ‘I’m so little and cute’ thing going on. But don’t let that fool you. You see that evil glint in her eye? You might mistake it for RBF – Resting Bok Face, but it’s really just the cruel indifference of nature packaged into a chirping fluffball. That’s right. Baby Chicken would peck the eyeballs out of your skull if she liked the way it felt. Don’t wait; set up your date with Baby today!"
-        , photoUrl = "http://localhost:3000/profiles/babychicken.jpg"
-        }
+    , currentPet = princess
+    , nextPets = nextPets
     }
-
 
 
 -- Define an update function
@@ -39,16 +26,34 @@ initialModel =
 
 type Msg
     = ProfileButtonWasClicked
+    | DislikeButtonWasClicked
+    | LikeButtonWasClicked
 
 
 update : Msg -> Model -> Model
 update msg model =
     case msg of
         ProfileButtonWasClicked ->
-            if model.showProfileText then
+            if model.showProfileText == True then
                 { model | showProfileText = False }
             else
                 { model | showProfileText = True }
+        DislikeButtonWasClicked -> 
+            let
+                nextPet = 
+                    case model.nextPets of
+                        h :: t ->
+                            h
+                        [] ->
+                            princess
+                remainingPets = 
+                    case model.nextPets of
+                        h :: t ->
+                            t
+                        [] -> []
+            in
+                { model | currentPet = nextPet, nextPets = remainingPets }
+        LikeButtonWasClicked -> model
 
 
 -- Define a view function
@@ -88,7 +93,8 @@ view model =
                         ]
                     ]
                 , div [ class "button-group" ]
-                    [ button [ class "button-round button-primary button-big icon-x" ]
+                    [ button [ class "button-round button-primary button-big icon-x"
+                             , onClick DislikeButtonWasClicked ]
                         [ img [ src "/styling/images/x-icon.png" ]
                             []
                         ]
@@ -99,7 +105,8 @@ view model =
                         [ img [ src "/styling/images/i-icon.png" ]
                             []
                         ]
-                    , button [ class "button-round button-primary button-big" ]
+                    , button [ class "button-round button-primary button-big"
+                             , onClick LikeButtonWasClicked ]
                         [ img [ src "/styling/images/like-icon.png" ]
                             []
                         ]
