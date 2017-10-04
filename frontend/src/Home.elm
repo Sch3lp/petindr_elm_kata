@@ -38,8 +38,11 @@ update msg model =
                 { model | showProfileText = False }
             else
                 { model | showProfileText = True }
-        DislikeButtonWasClicked -> 
-            let
+        DislikeButtonWasClicked -> advancePet model
+        LikeButtonWasClicked -> advancePet model
+
+advancePet: Model -> Model
+advancePet model = let
                 nextPet = 
                     case model.nextPets of
                         h :: t ->
@@ -53,8 +56,6 @@ update msg model =
                         [] -> []
             in
                 { model | currentPet = nextPet, nextPets = remainingPets }
-        LikeButtonWasClicked -> model
-
 
 -- Define a view function
 
