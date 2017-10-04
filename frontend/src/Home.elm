@@ -21,6 +21,7 @@ initialModel =
     }
 
 
+
 -- Define an update function
 
 
@@ -34,23 +35,29 @@ update : Msg -> Model -> Model
 update msg model =
     case msg of
         ProfileButtonWasClicked ->
-            if model.showProfileText == True then
-                { model | showProfileText = False }
-            else
-                { model | showProfileText = True }
-        DislikeButtonWasClicked -> advancePet model
-        LikeButtonWasClicked -> advancePet model
+            { model | showProfileText = not model.showProfileText }
 
-advancePet: Model -> Model
-advancePet model = let
-                (nextPet, remainingPets) =
-                    case model.nextPets of
-                        h :: t ->
-                            (h,t)
-                        [] ->
-                            (princess,[])
-            in
-                { model | currentPet = nextPet, nextPets = remainingPets }
+        DislikeButtonWasClicked ->
+            advancePet model
+
+        LikeButtonWasClicked ->
+            advancePet model
+
+
+advancePet : Model -> Model
+advancePet model =
+    let
+        ( nextPet, remainingPets ) =
+            case model.nextPets of
+                h :: t ->
+                    ( h, t )
+
+                [] ->
+                    ( princess, [] )
+    in
+        { model | currentPet = nextPet, nextPets = remainingPets }
+
+
 
 -- Define a view function
 
@@ -89,8 +96,10 @@ view model =
                         ]
                     ]
                 , div [ class "button-group" ]
-                    [ button [ class "button-round button-primary button-big icon-x"
-                             , onClick DislikeButtonWasClicked ]
+                    [ button
+                        [ class "button-round button-primary button-big icon-x"
+                        , onClick DislikeButtonWasClicked
+                        ]
                         [ img [ src "/styling/images/x-icon.png" ]
                             []
                         ]
@@ -101,8 +110,10 @@ view model =
                         [ img [ src "/styling/images/i-icon.png" ]
                             []
                         ]
-                    , button [ class "button-round button-primary button-big"
-                             , onClick LikeButtonWasClicked ]
+                    , button
+                        [ class "button-round button-primary button-big"
+                        , onClick LikeButtonWasClicked
+                        ]
                         [ img [ src "/styling/images/like-icon.png" ]
                             []
                         ]
