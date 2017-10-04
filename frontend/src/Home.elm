@@ -43,17 +43,12 @@ update msg model =
 
 advancePet: Model -> Model
 advancePet model = let
-                nextPet = 
+                (nextPet, remainingPets) =
                     case model.nextPets of
                         h :: t ->
-                            h
+                            (h,t)
                         [] ->
-                            princess
-                remainingPets = 
-                    case model.nextPets of
-                        h :: t ->
-                            t
-                        [] -> []
+                            (princess,[])
             in
                 { model | currentPet = nextPet, nextPets = remainingPets }
 
