@@ -36,6 +36,7 @@ type Msg
     | LikeButtonWasClicked
     | MatchmakeWasSuccessful
     | MatchmakeWasUnsuccessful
+    | GoBackFromMatchOverlayButtonWasClicked
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -55,6 +56,9 @@ update msg model =
         
         MatchmakeWasUnsuccessful ->
             ( advancePet model, Cmd.none)
+
+        GoBackFromMatchOverlayButtonWasClicked ->
+            ( {model | showMatchOverlay = False}, Cmd.none )
 
 advancePet : Model -> Model
 advancePet model =
@@ -118,7 +122,8 @@ view model =
                         [ span [ class "button-chat" ]
                             [ text "Send message" ]
                         ]
-                    , button [ class "button-square button-secundary" ]
+                    , button [ class "button-square button-secundary"
+                             , onClick GoBackFromMatchOverlayButtonWasClicked ]
                         [ span [ class "button-goback" ]
                             [ text "Go back" ]
                         ]
