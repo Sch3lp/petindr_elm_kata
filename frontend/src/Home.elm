@@ -152,18 +152,23 @@ view model =
         ]
 
 
-renderProfileText : Bool -> String -> Html Msg
-renderProfileText shouldRender profileText =
+conditionallyRender : Bool -> Html Msg -> Html Msg
+conditionallyRender shouldRender divToBeRendered =
     if shouldRender then
-        div [ class "profile-text" ]
-            [ text profileText ]
+        divToBeRendered
     else
         div [] []
 
 
+renderProfileText : Bool -> String -> Html Msg
+renderProfileText shouldRender profileText =
+    conditionallyRender shouldRender <|
+        div [ class "profile-text" ] [ text profileText ]
+
+
 renderMatchOverlay : Bool -> Pet -> Html Msg
 renderMatchOverlay shouldRender possibleMatchedPet =
-    if shouldRender then
+    conditionallyRender shouldRender <|
         div [ class "overlay" ]
             [ div []
                 [ div [ class "match-title" ]
@@ -189,8 +194,6 @@ renderMatchOverlay shouldRender possibleMatchedPet =
                     [ text "Go back" ]
                 ]
             ]
-    else
-        div [] []
 
 
 subscriptions : Model -> Sub Msg
