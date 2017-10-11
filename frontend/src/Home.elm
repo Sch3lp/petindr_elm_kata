@@ -114,7 +114,7 @@ view model =
                     [ div []
                         [ img [ src model.currentPet.photoUrl ]
                             []
-                        , flip conditionallyRender 
+                        , conditionallyRender 
                              (profileTextDiv model.currentPet.text )
                              model.showProfileText
                         ]
@@ -149,31 +149,15 @@ view model =
                         []
                     ]
                 ]
-            , renderMatchOverlay model.showMatchOverlay model.possibleMatchedPet
+            , conditionallyRender (matchOverlayDiv model.possibleMatchedPet) model.showMatchOverlay
             ]
         ]
 
 profileTextDiv : String -> Html Msg
 profileTextDiv profileText = div [ class "profile-text" ] [ text profileText ]
 
-conditionallyRender : Bool -> Html Msg -> Html Msg
-conditionallyRender shouldRender divToBeRendered =
-    if shouldRender then
-        divToBeRendered
-    else
-        div [] []
-
-
-renderProfileText : Bool -> String -> Html Msg
-renderProfileText shouldRender profileText =
-    conditionallyRender shouldRender <|
-        div [ class "profile-text" ] [ text profileText ]
-
-
-renderMatchOverlay : Bool -> Pet -> Html Msg
-renderMatchOverlay shouldRender possibleMatchedPet =
-    conditionallyRender shouldRender <|
-        div [ class "overlay" ]
+matchOverlayDiv: Pet -> Html Msg
+matchOverlayDiv possibleMatchedPet = div [ class "overlay" ]
             [ div []
                 [ div [ class "match-title" ]
                     [ text "It's a match!" ]
@@ -198,6 +182,13 @@ renderMatchOverlay shouldRender possibleMatchedPet =
                     [ text "Go back" ]
                 ]
             ]
+
+conditionallyRender : Html Msg -> Bool ->  Html Msg
+conditionallyRender divToBeRendered shouldRender =
+    if shouldRender then
+        divToBeRendered
+    else
+        div [] []
 
 
 subscriptions : Model -> Sub Msg
