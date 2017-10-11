@@ -84,8 +84,11 @@ const pets = [
 ]
 
 app.post('/api/pets/:id', (req, res) => {
+    console.log(`Trying to match with petId: ${req.params.id}`);
     res.set('Access-Control-Allow-Origin', '*');
-    res.json(Math.random() > 0.6);
+    let result = Math.random() > 0.6;
+    console.log(result ? 'Matched!' : 'No match');
+    res.json(result);
 })
 
 app.get('/api/pets', (req, res) => {
