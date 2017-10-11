@@ -114,7 +114,8 @@ view model =
                     [ div []
                         [ img [ src model.currentPet.photoUrl ]
                             []
-                        , renderProfileText model.showProfileText model.currentPet.text
+                        , conditionallyRender model.showProfileText <|
+                            div [ class "profile-text" ] [ text model.currentPet.text ]
                         ]
                     , div [ class "identification" ]
                         [ span [ class "identification-name" ]
