@@ -74,7 +74,7 @@ advancePet model =
 
 checkMatch : Model -> Cmd Msg
 checkMatch model =
-    Http.send evaluateMatchMakingResponse performMatchmaking
+    Http.send evaluateMatchMakingResponse <| performMatchmaking <| toString model.currentPet.id
 
 
 evaluateMatchMakingResponse : Result Http.Error Bool -> Msg
@@ -94,9 +94,9 @@ evaluateMatchMakingResponse result =
 -- HTTP calls
 
 
-performMatchmaking : Http.Request Bool
-performMatchmaking =
-    Http.post "http://localhost:3000/api/pets/1" Http.emptyBody (Json.Decode.bool)
+performMatchmaking : String -> Http.Request Bool
+performMatchmaking petId =
+    Http.post ("http://localhost:3000/api/pets/"++petId) Http.emptyBody (Json.Decode.bool)
 
 
 view : Model -> Html Msg
