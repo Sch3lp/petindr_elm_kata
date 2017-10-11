@@ -114,8 +114,9 @@ view model =
                     [ div []
                         [ img [ src model.currentPet.photoUrl ]
                             []
-                        , conditionallyRender model.showProfileText <|
-                            div [ class "profile-text" ] [ text model.currentPet.text ]
+                        , flip conditionallyRender 
+                             (profileTextDiv model.currentPet.text )
+                             model.showProfileText
                         ]
                     , div [ class "identification" ]
                         [ span [ class "identification-name" ]
@@ -152,6 +153,8 @@ view model =
             ]
         ]
 
+profileTextDiv : String -> Html Msg
+profileTextDiv profileText = div [ class "profile-text" ] [ text profileText ]
 
 conditionallyRender : Bool -> Html Msg -> Html Msg
 conditionallyRender shouldRender divToBeRendered =
