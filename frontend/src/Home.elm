@@ -1,6 +1,10 @@
 module Home exposing (..)
 
 import Pets exposing (..)
+
+import Http exposing (Request)
+import Json.Decode exposing (bool)
+
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -10,6 +14,7 @@ type alias Model =
     { showProfileText : Bool
     , currentPet : Pet
     , nextPets : List Pet
+    , showMatchOverlay : Bool
     }
 
 
@@ -18,6 +23,7 @@ initialModel =
     { showProfileText = False
     , currentPet = princess
     , nextPets = nextPets
+    , showMatchOverlay = False
     }
 
 
@@ -29,20 +35,27 @@ type Msg
     = ProfileButtonWasClicked
     | DislikeButtonWasClicked
     | LikeButtonWasClicked
+    | MatchmakeWasSuccessful
+    | MatchmakeWasUnsuccessful
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
         ProfileButtonWasClicked ->
-            { model | showProfileText = not model.showProfileText }
+            ({ model | showProfileText = not model.showProfileText }, Cmd.none)
 
         DislikeButtonWasClicked ->
-            advancePet model
+            (advancePet model, Cmd.none)
 
         LikeButtonWasClicked ->
-            advancePet model
-
+            (advancePet model, checkMatch model)
+        
+        MatchmakeWasSuccessful -> 
+            ( { model | showMatchOverlay = True }, Cmd.none)
+        
+        MatchmakeWasUnsuccessful ->
+            (model, Cmd.none)
 
 advancePet : Model -> Model
 advancePet model =
@@ -58,6 +71,25 @@ advancePet model =
         { model | currentPet = nextPet, nextPets = remainingPets }
 
 
+checkMatch: Model -> Cmd Msg
+checkMatch model =
+    Http.send evaluateMatchMakingResponse performMatchmaking
+
+evaluateMatchMakingResponse: Result Http.Error Bool -> Msg
+evaluateMatchMakingResponse result = 
+    case result of
+        (Ok True) ->
+            MatchmakeWasSuccessful
+        (Ok False) ->
+            MatchmakeWasUnsuccessful
+        (Err _) ->
+            MatchmakeWasUnsuccessful
+            
+
+-- HTTP calls
+performMatchmaking: Http.Request (Bool)
+performMatchmaking = Http.post "http://localhost:3000/api/pets/1" Http.emptyBody (Json.Decode.bool)
+
 
 -- Define a view function
 
@@ -69,6 +101,32 @@ view model =
             if model.showProfileText then
                 div [ class "profile-text" ]
                     [ text model.currentPet.text ]
+            else
+                div [] []
+        matchDiv = 
+            if model.showMatchOverlay then
+                div [ class "overlay" ]
+                    [ div []
+                        [ div [ class "match-title" ]
+                            [ text "It's a match!" ]
+                        , div [ class "match-details" ]
+                            [ text "You and Princess have liked each other" ]
+                        ]
+                    , div [ class "match-profiles" ]
+                        [ img [ class "match-profile", src "http://localhost:3000/profiles/self-profile.png" ]
+                            []
+                        , img [ class "match-profile", src "http://localhost:3000/profiles/princess.jpg" ]
+                            []
+                        ]
+                    , button [ class "button-square button-primary" ]
+                        [ span [ class "button-chat" ]
+                            [ text "Send message" ]
+                        ]
+                    , button [ class "button-square button-secundary" ]
+                        [ span [ class "button-goback" ]
+                            [ text "Go back" ]
+                        ]
+                    ]
             else
                 div [] []
     in
@@ -118,17 +176,21 @@ view model =
                             []
                         ]
                     ]
+                , matchDiv
                 ]
             ]
 
-
+-- subscriptions
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
 
 -- main
 
-
 main =
-    beginnerProgram
-        { model = initialModel
+    program
+        { init = (initialModel, Cmd.none)
         , view = view
         , update = update
+        , subscriptions = subscriptions
         }
