@@ -15,6 +15,7 @@ type alias Model =
     , currentPet : Pet
     , nextPets : List Pet
     , showMatchOverlay : Bool
+    , possibleMatchedPet: Pet
     }
 
 
@@ -24,11 +25,9 @@ initialModel =
     , currentPet = princess
     , nextPets = nextPets
     , showMatchOverlay = False
+    , possibleMatchedPet = princess
     }
 
-
-
--- Define an update function
 
 
 type Msg
@@ -49,13 +48,13 @@ update msg model =
             (advancePet model, Cmd.none)
 
         LikeButtonWasClicked ->
-            (advancePet model, checkMatch model)
+            ({ model | possibleMatchedPet = model.currentPet }, checkMatch model)
         
         MatchmakeWasSuccessful -> 
-            ( { model | showMatchOverlay = True }, Cmd.none)
+            ( advancePet { model | showMatchOverlay = True }, Cmd.none)
         
         MatchmakeWasUnsuccessful ->
-            (model, Cmd.none)
+            ( advancePet model, Cmd.none)
 
 advancePet : Model -> Model
 advancePet model =
@@ -91,9 +90,6 @@ performMatchmaking: Http.Request (Bool)
 performMatchmaking = Http.post "http://localhost:3000/api/pets/1" Http.emptyBody (Json.Decode.bool)
 
 
--- Define a view function
-
-
 view : Model -> Html Msg
 view model =
     let
@@ -110,12 +106,12 @@ view model =
                         [ div [ class "match-title" ]
                             [ text "It's a match!" ]
                         , div [ class "match-details" ]
-                            [ text "You and Princess have liked each other" ]
+                            [ text ("You and " ++ model.possibleMatchedPet.name ++ " have liked each other") ]
                         ]
                     , div [ class "match-profiles" ]
                         [ img [ class "match-profile", src "http://localhost:3000/profiles/self-profile.png" ]
                             []
-                        , img [ class "match-profile", src "http://localhost:3000/profiles/princess.jpg" ]
+                        , img [ class "match-profile", src model.possibleMatchedPet.photoUrl ]
                             []
                         ]
                     , button [ class "button-square button-primary" ]
@@ -180,12 +176,9 @@ view model =
                 ]
             ]
 
--- subscriptions
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.none
-
--- main
 
 main =
     program
