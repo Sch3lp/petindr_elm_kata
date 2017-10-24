@@ -6,6 +6,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json exposing (map)
 import Char exposing (..)
+import WebSocket exposing(listen, send)
 
 
 type ChatMessage
@@ -36,6 +37,7 @@ initialModel =
 type Msg
     = MessageWasEntered
     | TextWasEntered String
+    | MatchChatMessageReceived String
     | Noop
 
 
@@ -52,11 +54,22 @@ update msg model =
 
                 clearedText = ""
             in
-                ( { model | conversation = updatedConvo, ourText = clearedText }, Cmd.none )
+                ( { model | conversation = updatedConvo, ourText = clearedText }, WebSocket.send ("ws://localhost:3000/api/chat/" ++ (toString model.pet.id)) model.ourText )
+
+        MatchChatMessageReceived message ->
+            let
+                updatedConvo =
+                    addMatchMessageToConvo model.conversation message
+            in
+                ( {model | conversation = updatedConvo }, Cmd.none)
 
         _ ->
             ( model, Cmd.none )
 
+
+addMatchMessageToConvo : Conversation -> String -> Conversation
+addMatchMessageToConvo convo msg =
+    addToConversation convo <| MatchChatMessage msg
 
 addSelfToConvo : Conversation -> String -> Conversation
 addSelfToConvo convo msg =
@@ -140,7 +153,7 @@ renderChatMessage msg =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    WebSocket.listen "ws://localhost:3000/api/chat/4" MatchChatMessageReceived -- don't hardcode cricky's petId
 
 
 main =
