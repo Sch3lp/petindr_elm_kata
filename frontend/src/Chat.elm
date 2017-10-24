@@ -34,7 +34,7 @@ initialModel =
 
 
 type Msg
-    = SendButtonWasClicked
+    = MessageWasEntered
     | TextWasEntered String
     | Noop
 
@@ -45,14 +45,14 @@ update msg model =
         TextWasEntered text ->
             ( { model | ourText = text }, Cmd.none )
 
-        SendButtonWasClicked ->
+        MessageWasEntered ->
             let
                 updatedConvo =
                     addSelfToConvo model.conversation model.ourText
 
                 clearedText = ""
             in
-                ( { model | conversation = updatedConvo, ourText = "" }, Cmd.none )
+                ( { model | conversation = updatedConvo, ourText = clearedText }, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
@@ -92,7 +92,7 @@ view model =
                 []
             , button
                 [ class "button-round button-primary"
-                , onClick SendButtonWasClicked
+                , onClick MessageWasEntered
                 ]
                 [ text "Send" ]
             ]
@@ -107,7 +107,7 @@ sendOnEnter : KeyCode -> Msg
 sendOnEnter keyCode =
     case keyCode of
         13 ->
-            SendButtonWasClicked
+            MessageWasEntered
 
         _ ->
             Noop
