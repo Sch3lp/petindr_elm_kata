@@ -29,9 +29,7 @@ initialModel : Model
 initialModel =
     Model cricket
         ""
-        [ SelfChatMessage "Hey there Crickie-poo"
-        , MatchChatMessage "bok bok!"
-        ]
+        []
 
 
 type Msg
@@ -153,7 +151,7 @@ renderChatMessage msg =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    WebSocket.listen "ws://localhost:3000/api/chat/4" MatchChatMessageReceived -- don't hardcode cricky's petId
+    WebSocket.listen ("ws://localhost:3000/api/chat/" ++ (toString model.pet.id)) MatchChatMessageReceived
 
 
 main =
