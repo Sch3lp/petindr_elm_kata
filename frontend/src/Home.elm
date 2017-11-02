@@ -183,7 +183,7 @@ matchOverlayDiv possibleMatchedPet = div [ class "overlay" ]
                 ]
             ]
 
-conditionallyRender : Html Msg -> Bool ->  Html Msg
+conditionallyRender : Html Msg -> Bool -> Html Msg
 conditionallyRender divToBeRendered shouldRender =
     if shouldRender then
         divToBeRendered
