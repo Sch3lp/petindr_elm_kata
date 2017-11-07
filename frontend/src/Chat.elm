@@ -4,11 +4,13 @@ import Pets exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Json.Decode as Json exposing (map)
+import Http exposing (Request)
+import Json.Decode exposing (map)
 import Char exposing (..)
-import WebSocket exposing(listen, send)
-import UrlParser exposing((</>), s, int, parseHash)
+import WebSocket exposing (listen, send)
+import UrlParser exposing ((</>), s, int, parseHash)
 import Navigation as Nav
+
 
 type ChatMessage
     = SelfChatMessage String
@@ -21,21 +23,58 @@ type alias Conversation =
 
 type alias Model =
     { pet : Pet
-    , petId: Int
     , ourText : String
     , conversation : Conversation
     }
+
+
 
 {- initialize model using webservice /api/pets/:petid -}
 {- where :petid matches the id that got parsed from the url -}
 {- e.g.: http://localhost:8000/index.html/#chat/1 should load Princess, because http://localhost:3000/api/pets/1 return Princess -}
 
 
+fetchPet : Int -> Cmd Msg
+fetchPet petId =
+    Http.send updateModelWithFetchedPet <| performGet <| toString petId
+
+
+updateModelWithFetchedPet : Result Http.Error Pet -> Msg
+updateModelWithFetchedPet result =
+    case result of
+        Ok pet ->
+            InitializeModelWithPet pet
+
+        Err _ ->
+            Noop
+
+
+
+-- HTTP calls
+
+
+performGet : String -> Http.Request Pet
+performGet petId =
+    Http.get ("http://localhost:3000/api/pets/" ++ petId) petDecoder
+
+
+petDecoder : Json.Decode.Decoder Pet
+petDecoder =
+    Json.Decode.map5 Pet
+     (Json.Decode.field "id" Json.Decode.int)
+     (Json.Decode.field "name" Json.Decode.string)
+     (Json.Decode.field "distance" Json.Decode.int)
+     (Json.Decode.field "text" Json.Decode.string)
+     (Json.Decode.field "photoUrl" Json.Decode.string)
+
+
+
+-- Model
+
 
 initialModel : Model
 initialModel =
     Model cricket
-        888
         ""
         []
 
@@ -44,6 +83,8 @@ type Msg
     = MessageWasEntered
     | TextWasEntered String
     | MatchChatMessageReceived String
+    | InitializeModelWithPet Pet
+    | UrlChanged Nav.Location
     | Noop
 
 
@@ -58,7 +99,8 @@ update msg model =
                 updatedConvo =
                     addSelfToConvo model.conversation model.ourText
 
-                clearedText = ""
+                clearedText =
+                    ""
             in
                 ( { model | conversation = updatedConvo, ourText = clearedText }, WebSocket.send ("ws://localhost:3000/api/chat/" ++ (toString model.pet.id)) model.ourText )
 
@@ -67,7 +109,13 @@ update msg model =
                 updatedConvo =
                     addMatchMessageToConvo model.conversation message
             in
-                ( {model | conversation = updatedConvo }, Cmd.none)
+                ( { model | conversation = updatedConvo }, Cmd.none )
+
+        InitializeModelWithPet fetchedPet ->
+            ( { model | pet = fetchedPet }, Cmd.none )
+        
+        UrlChanged location ->
+            parseUrl model location
 
         _ ->
             ( model, Cmd.none )
@@ -77,6 +125,7 @@ addMatchMessageToConvo : Conversation -> String -> Conversation
 addMatchMessageToConvo convo msg =
     addToConversation convo <| MatchChatMessage msg
 
+
 addSelfToConvo : Conversation -> String -> Conversation
 addSelfToConvo convo msg =
     addToConversation convo <| SelfChatMessage msg
@@ -85,6 +134,10 @@ addSelfToConvo convo msg =
 addToConversation : Conversation -> ChatMessage -> Conversation
 addToConversation convo msg =
     convo ++ [ msg ]
+
+
+
+-- View
 
 
 view : Model -> Html Msg
@@ -120,7 +173,8 @@ view model =
 
 onKeyUp : (KeyCode -> Msg) -> Attribute Msg
 onKeyUp tagger =
-    onWithOptions "keyup" { stopPropagation = True, preventDefault = True } (Json.map tagger keyCode)
+    onWithOptions "keyup" { stopPropagation = True, preventDefault = True } (Json.Decode.map tagger keyCode)
+
 
 sendOnEnter : KeyCode -> Msg
 sendOnEnter keyCode =
@@ -130,6 +184,7 @@ sendOnEnter keyCode =
 
         _ ->
             Noop
+
 
 renderConversation : Conversation -> List (Html Msg)
 renderConversation convo =
@@ -157,31 +212,35 @@ renderChatMessage msg =
                 ]
 
 
+
+-- subscriptions
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     WebSocket.listen ("ws://localhost:3000/api/chat/" ++ (toString model.pet.id)) MatchChatMessageReceived
 
-parseUrl: Nav.Location -> (Model, Cmd Msg)
-parseUrl location = ( updateWithLocation initialModel location, Cmd.none )
 
-updateWithLocation: Model -> Nav.Location -> Model
-updateWithLocation model location =
-    let
-        idFromLocation = getPetIdFromLocation location
-    in
-        {model | petId = idFromLocation}
 
-getPetIdFromLocation: Nav.Location -> Int
-getPetIdFromLocation loc = 
+-- url parsing
+
+
+parseUrl : Model -> Nav.Location -> ( Model, Cmd Msg )
+parseUrl model location =
+    ( model, fetchPet <| getPetIdFromLocation location )
+
+
+getPetIdFromLocation : Nav.Location -> Int
+getPetIdFromLocation loc =
     Maybe.withDefault 999 <| parseHash (UrlParser.s "chat" </> int) loc
 
-urlChangedHandler: (Nav.Location -> Msg)
-urlChangedHandler = \(location) -> Noop
+-- main
+
 
 main =
     Nav.program
-        urlChangedHandler
-        { init = parseUrl
+        UrlChanged
+        { init = parseUrl initialModel
         , view = view
         , update = update
         , subscriptions = subscriptions
