@@ -7,7 +7,8 @@ import Html.Events exposing (..)
 import Json.Decode as Json exposing (map)
 import Char exposing (..)
 import WebSocket exposing(listen, send)
-
+import UrlParser exposing((</>), s, int, parseHash)
+import Navigation as Nav
 
 type ChatMessage
     = SelfChatMessage String
@@ -20,14 +21,21 @@ type alias Conversation =
 
 type alias Model =
     { pet : Pet
+    , petId: Int
     , ourText : String
     , conversation : Conversation
     }
+
+{- initialize model using webservice /api/pets/:petid -}
+{- where :petid matches the id that got parsed from the url -}
+{- e.g.: http://localhost:8000/index.html/#chat/1 should load Princess, because http://localhost:3000/api/pets/1 return Princess -}
+
 
 
 initialModel : Model
 initialModel =
     Model cricket
+        888
         ""
         []
 
@@ -153,10 +161,27 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     WebSocket.listen ("ws://localhost:3000/api/chat/" ++ (toString model.pet.id)) MatchChatMessageReceived
 
+parseUrl: Nav.Location -> (Model, Cmd Msg)
+parseUrl location = ( updateWithLocation initialModel location, Cmd.none )
+
+updateWithLocation: Model -> Nav.Location -> Model
+updateWithLocation model location =
+    let
+        idFromLocation = getPetIdFromLocation location
+    in
+        {model | petId = idFromLocation}
+
+getPetIdFromLocation: Nav.Location -> Int
+getPetIdFromLocation loc = 
+    Maybe.withDefault 999 <| parseHash (UrlParser.s "chat" </> int) loc
+
+urlChangedHandler: (Nav.Location -> Msg)
+urlChangedHandler = \(location) -> Noop
 
 main =
-    program
-        { init = ( initialModel, Cmd.none )
+    Nav.program
+        urlChangedHandler
+        { init = parseUrl
         , view = view
         , update = update
         , subscriptions = subscriptions
