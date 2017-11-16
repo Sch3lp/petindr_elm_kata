@@ -1,4 +1,4 @@
-module Pets exposing (..)
+module Data.Pets exposing (..)
 
 
 type alias Pet =

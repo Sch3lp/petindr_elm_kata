@@ -1,6 +1,8 @@
-module Home exposing (..)
+module Pages.Home exposing (..)
 
-import Pets exposing (..)
+import Data.Pets exposing (..)
+import Views.Header exposing(..)
+
 import Http exposing (Request)
 import Json.Decode exposing (bool)
 import Html exposing (..)
@@ -102,30 +104,9 @@ performMatchmaking petId =
 view : Model -> Html Msg
 view model =
     div []
-        [ header []
-            [ span [ class "header-title" ]
-                [ text "Petindr" ]
-            , button [ class "icon-right chat-icon" ]
-                []
-            ]
+        [ Views.Header.header
         , div [ class "container main-container" ]
-            [ div [ class "profiles" ]
-                [ div [ class "profile" ]
-                    [ div []
-                        [ img [ src model.currentPet.photoUrl ]
-                            []
-                        , conditionallyRender 
-                             (profileTextDiv model.currentPet.text )
-                             model.showProfileText
-                        ]
-                    , div [ class "identification" ]
-                        [ span [ class "identification-name" ]
-                            [ text model.currentPet.name ]
-                        , span [ class "identification-distance" ]
-                            [ text <| toString model.currentPet.distance ]
-                        ]
-                    ]
-                ]
+            [ viewProfile model
             , div [ class "button-group" ]
                 [ button
                     [ class "button-round button-primary button-big icon-x"
@@ -152,6 +133,25 @@ view model =
             , conditionallyRender (matchOverlayDiv model.possibleMatchedPet) model.showMatchOverlay
             ]
         ]
+
+viewProfile: Model -> Html Msg
+viewProfile model = div [ class "profiles" ]
+                [ div [ class "profile" ]
+                    [ div []
+                        [ img [ src model.currentPet.photoUrl ]
+                            []
+                        , conditionallyRender 
+                             (profileTextDiv model.currentPet.text )
+                             model.showProfileText
+                        ]
+                    , div [ class "identification" ]
+                        [ span [ class "identification-name" ]
+                            [ text model.currentPet.name ]
+                        , span [ class "identification-distance" ]
+                            [ text <| toString model.currentPet.distance ]
+                        ]
+                    ]
+                ]
 
 profileTextDiv : String -> Html Msg
 profileTextDiv profileText = div [ class "profile-text" ] [ text profileText ]
