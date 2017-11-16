@@ -1,6 +1,6 @@
-module Home exposing (..)
+module Pages.Chat exposing (..)
 
-import Pets exposing (..)
+import Data.Pets exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)

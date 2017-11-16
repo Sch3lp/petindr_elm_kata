@@ -1,12 +1,11 @@
 module HomeTests exposing (..)
 
-import Home exposing (..)
-import Pets exposing (princess, cricket, babyChicken)
+import Pages.Home exposing (..)
+import Data.Pets exposing (princess, cricket, babyChicken)
 import Expect exposing (Expectation)
 import Test exposing (..)
 import Html exposing (..)
 import Test.Html.Query as Query
-import Test.Html.Selector as Select
 
 
 conditionallyRenderTest : Test
