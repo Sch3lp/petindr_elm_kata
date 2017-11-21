@@ -33,7 +33,7 @@ update msg model =
             ( model, Cmd.none )
 
         UrlChanged location ->
-            deducePageFromLocation location model
+            parseUrl model location
 
         HomeMsg homeMsg ->
             let
@@ -57,9 +57,8 @@ route =
         , UrlParser.map Chat (UrlParser.s "chat" </> int)
         ]
 
-
-deducePageFromLocation : Nav.Location -> Model -> ( Model, Cmd Msg )
-deducePageFromLocation location model =
+parseUrl : Model -> Nav.Location -> ( Model, Cmd Msg )
+parseUrl model location =
     let
         deducedPage =
             parseHash route location
@@ -90,9 +89,6 @@ view { homeSubModel, chatSubModel, currentPage } =
             div [] [ text "Whoops. I guess this is my 404 page?" ]
 
 
-parseUrl : Model -> Nav.Location -> ( Model, Cmd Msg )
-parseUrl model location =
-    ( model, Cmd.none )
 
 
 initialModel : Model
