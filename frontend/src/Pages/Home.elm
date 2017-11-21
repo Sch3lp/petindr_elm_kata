@@ -8,7 +8,7 @@ import Json.Decode exposing (bool)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-
+import Navigation as Nav
 
 type alias Model =
     { showProfileText : Bool
@@ -36,6 +36,7 @@ type Msg
     | MatchmakeWasSuccessful
     | MatchmakeWasUnsuccessful
     | GoBackFromMatchOverlayButtonWasClicked
+    | SendMessageWasClicked
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -58,7 +59,9 @@ update msg model =
 
         GoBackFromMatchOverlayButtonWasClicked ->
             ( { model | showMatchOverlay = False }, Cmd.none )
-
+        
+        SendMessageWasClicked ->
+            ( { model | showMatchOverlay = False }, Nav.modifyUrl ("#chat/" ++ (toString model.possibleMatchedPet.id)) )
 
 advancePet : Model -> Model
 advancePet model =
@@ -171,7 +174,7 @@ matchOverlayDiv possibleMatchedPet = div [ class "overlay" ]
                     []
                 ]
             , button [ class "button-square button-primary" ]
-                [ span [ class "button-chat" ]
+                [ span [ class "button-chat", onClick SendMessageWasClicked ]
                     [ text "Send message" ]
                 ]
             , button
