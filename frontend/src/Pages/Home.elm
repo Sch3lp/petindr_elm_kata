@@ -61,7 +61,7 @@ update msg model =
             ( { model | showMatchOverlay = False }, Cmd.none )
         
         SendMessageWasClicked ->
-            ( { model | showMatchOverlay = False }, Nav.modifyUrl ("#chat/" ++ (toString model.possibleMatchedPet.id)) )
+            ( { model | showMatchOverlay = False }, Nav.newUrl ("#chat/" ++ (toString model.possibleMatchedPet.id)) )
 
 advancePet : Model -> Model
 advancePet model =

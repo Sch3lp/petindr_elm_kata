@@ -8,7 +8,7 @@ import Http exposing (Request)
 import Json.Decode exposing (map)
 import Char exposing (..)
 import WebSocket exposing (listen, send)
-
+import Navigation as Nav
 
 type ChatMessage
     = SelfChatMessage String
@@ -82,6 +82,7 @@ type Msg
     | TextWasEntered String
     | MatchChatMessageReceived String
     | InitializeModelWithPet Pet
+    | BackWasClicked
     | Noop
 
 
@@ -111,6 +112,9 @@ update msg model =
         InitializeModelWithPet fetchedPet ->
             ( { model | pet = fetchedPet }, Cmd.none )
         
+        BackWasClicked ->
+            ( model, Nav.back 1 )
+
         Noop ->
             ( model, Cmd.none )
 
@@ -138,7 +142,7 @@ view : Model -> Html Msg
 view model =
     div [ class "body" ]
         [ header []
-            [ button [ class "icon-left back-icon" ]
+            [ button [ class "icon-left back-icon", onClick BackWasClicked ]
                 []
             , span [ class "header-title" ]
                 [ text model.pet.name ]
