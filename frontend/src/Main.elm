@@ -1,8 +1,6 @@
 module Main exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
 import UrlParser exposing (Parser, (</>), s, int, parseHash, top, oneOf, map)
 import Navigation as Nav
 import Pages.Home as Home exposing (Model, Msg)
@@ -67,7 +65,7 @@ deducePageFromLocation location model =
             parseHash route location
 
         newModel =
-            { model | currentPage = deducedPage }
+            { model | currentPage = deducedPage, chatSubModel = Chat.initialModel, homeSubModel = Home.initialModel }
     in
         case deducedPage of
             Just (Chat petId) ->
@@ -99,12 +97,17 @@ parseUrl model location =
 
 initialModel : Model
 initialModel =
-    Model Home.initialModel Chat.initialModel <| Just <| Chat 4
+    Model Home.initialModel Chat.initialModel <| Just <| Home
 
 
 subscriptions : Model -> Sub Msg
-subscriptions { homeSubModel, chatSubModel } =
-    Sub.map ChatMsg <| Chat.subscriptions chatSubModel
+subscriptions { homeSubModel, chatSubModel, currentPage } =
+    case currentPage of
+        Just (Chat petId) ->
+            Sub.map ChatMsg <| Chat.subscriptions chatSubModel
+            
+        _ -> Sub.none
+        
 
 
 main =

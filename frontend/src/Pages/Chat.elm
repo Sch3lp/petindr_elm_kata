@@ -234,14 +234,4 @@ getPetIdFromLocation : Nav.Location -> Int
 getPetIdFromLocation loc =
     Maybe.withDefault 999 <| parseHash (UrlParser.s "chat" </> int) loc
 
--- main
 
-
-main =
-    Nav.program
-        UrlChanged
-        { init = parseUrl initialModel
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }

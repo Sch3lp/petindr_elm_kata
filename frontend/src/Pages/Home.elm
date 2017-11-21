@@ -190,16 +190,3 @@ conditionallyRender divToBeRendered shouldRender =
     else
         div [] []
 
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.none
-
-
-main =
-    program
-        { init = ( initialModel, Cmd.none )
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
