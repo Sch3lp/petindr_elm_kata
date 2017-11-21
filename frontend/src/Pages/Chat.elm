@@ -8,8 +8,6 @@ import Http exposing (Request)
 import Json.Decode exposing (map)
 import Char exposing (..)
 import WebSocket exposing (listen, send)
-import UrlParser exposing ((</>), s, int, parseHash)
-import Navigation as Nav
 
 
 type ChatMessage
@@ -84,7 +82,6 @@ type Msg
     | TextWasEntered String
     | MatchChatMessageReceived String
     | InitializeModelWithPet Pet
-    | UrlChanged Nav.Location
     | Noop
 
 
@@ -114,10 +111,7 @@ update msg model =
         InitializeModelWithPet fetchedPet ->
             ( { model | pet = fetchedPet }, Cmd.none )
         
-        UrlChanged location ->
-            parseUrl model location
-
-        _ ->
+        Noop ->
             ( model, Cmd.none )
 
 
@@ -219,19 +213,4 @@ renderChatMessage msg =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     WebSocket.listen ("ws://localhost:3000/api/chat/" ++ (toString model.pet.id)) MatchChatMessageReceived
-
-
-
--- url parsing
-
-
-parseUrl : Model -> Nav.Location -> ( Model, Cmd Msg )
-parseUrl model location =
-    ( model, fetchPet <| getPetIdFromLocation location )
-
-
-getPetIdFromLocation : Nav.Location -> Int
-getPetIdFromLocation loc =
-    Maybe.withDefault 999 <| parseHash (UrlParser.s "chat" </> int) loc
-
 
