@@ -13,10 +13,11 @@ type Page
     = Home
     | Chat Int
 
+
 type alias Model =
-    { subModel : Home.Model
-    , subModel2 : Chat.Model
-    , page: Page
+    { homeSubModel : Home.Model
+    , chatSubModel : Chat.Model
+    , currentPage : Maybe Page
     }
 
 
@@ -34,21 +35,22 @@ update msg model =
             ( model, Cmd.none )
 
         UrlChanged location ->
-            (deducePageFromLocation location model, Cmd.none)
+            deducePageFromLocation location model
 
         HomeMsg homeMsg ->
             let
-                ( subModel, subCmd ) =
-                    Home.update homeMsg model.subModel
+                ( homeSubModel, subCmd ) =
+                    Home.update homeMsg model.homeSubModel
             in
-                ( { model | subModel = subModel }, Cmd.map HomeMsg subCmd )
+                ( { model | homeSubModel = homeSubModel }, Cmd.map HomeMsg subCmd )
 
         ChatMsg chatMsg ->
             let
-                ( subModel2, subCmd ) =
-                    Chat.update chatMsg model.subModel2
+                ( chatSubModel, subCmd ) =
+                    Chat.update chatMsg model.chatSubModel
             in
-                ( { model | subModel2 = subModel2 }, Cmd.map ChatMsg subCmd )
+                ( { model | chatSubModel = chatSubModel }, Cmd.map ChatMsg subCmd )
+
 
 route : Parser (Page -> a) a
 route =
@@ -58,17 +60,36 @@ route =
         ]
 
 
+deducePageFromLocation : Nav.Location -> Model -> ( Model, Cmd Msg )
+deducePageFromLocation location model =
+    let
+        deducedPage =
+            parseHash route location
 
-deducePageFromLocation: Nav.Location -> Model -> Model
-deducePageFromLocation location model 
-    = model
-        
-    
+        newModel =
+            { model | currentPage = deducedPage }
+    in
+        case deducedPage of
+            Just (Chat petId) ->
+                ( newModel, Cmd.map ChatMsg <| Chat.fetchPet petId )
+
+            _ ->
+                ( newModel, Cmd.none )
+
 
 view : Model -> Html Msg
-view { subModel, subModel2 } =
-    Home.view subModel
-        |> Html.map HomeMsg
+view { homeSubModel, chatSubModel, currentPage } =
+    case currentPage of
+        Just Home ->
+            Home.view homeSubModel
+                |> Html.map HomeMsg
+
+        Just (Chat petId) ->
+            Chat.view chatSubModel
+                |> Html.map ChatMsg
+
+        _ ->
+            div [] [ text "Whoops. I guess this is my 404 page?" ]
 
 
 parseUrl : Model -> Nav.Location -> ( Model, Cmd Msg )
@@ -78,7 +99,12 @@ parseUrl model location =
 
 initialModel : Model
 initialModel =
-    Model Home.initialModel Chat.initialModel Home
+    Model Home.initialModel Chat.initialModel <| Just <| Chat 4
+
+
+subscriptions : Model -> Sub Msg
+subscriptions { homeSubModel, chatSubModel } =
+    Sub.map ChatMsg <| Chat.subscriptions chatSubModel
 
 
 main =
@@ -87,5 +113,5 @@ main =
         { init = parseUrl initialModel
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
