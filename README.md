@@ -28,11 +28,12 @@ You can start editing `src/Home.elm`. You should see the result on http://localh
 
 Hints:
 - Convert the `showtext.html` into Elm code using your plugin or using [HTML-to-Elm online](https://mbylstra.github.io/html-to-elm/). Only convert the contents of the `<body>` tag.
-- As for the initial pet data, you can copy paste something from Pets.elm
+- As for the initial pet data, you can copy paste something from `src/Pets.elm`. Do **not** use the data in server.js for this.
 
 ## 2. Like/Dislike
 
-The like and the dislike button should go to the next pet. You'll need to keep a list of nextPets in your model (see Pets.elm for data).
+The like and the dislike button should go to the next pet. You'll need to keep a list of nextPets in your model (see `src/Pets.elm` for data). Do **not** use the data in server.js for this.
+
 Everytime you click _like_ or _dislike_, the first in the list of nextPets becomes the _currentPet_. The rest of the list becomes the new _nextPets_ list.
 
 Hints:
@@ -46,7 +47,7 @@ Hints:
 
 Hints:
 - Checkout the [Http](http://package.elm-lang.org/packages/elm-lang/http/latest) module and the [Json Decode](http://package.elm-lang.org/packages/elm-lang/core/5.0.0/Json-Decode) module
-- To decode the response into an Elm data structure, you can use Json.Decode.bool 
+- To decode the response into an Elm data structure, you can use `Json.Decode.bool`
 
 ## 4. Create a separate elm application
 
@@ -73,5 +74,25 @@ Hints:
 Hints:
 - Use the [WebSocket](http://package.elm-lang.org/packages/elm-lang/websocket/latest) module to listen for messages and to send messages.
 
-## 6. Routing between Home and Chat
-TODO
+## 6. Displaying Chat based on url
+
+- When you open the chat application with `http://localhost:8000/index.html#chat/:petid`, you should be chatting with the corresponding pet to `:petid`. So for example when you go to `http://localhost:8000/index.html#chat/1`, you should be chatting with Princess.
+- Changing the url to a different id should also update your page to the corresponding pet.
+
+Hints:
+- Have a look at [UrlParser](http://package.elm-lang.org/packages/evancz/url-parser/latest). Think about what the **only thing** is you require when opening the _Chat_ page.
+
+## 7. Routing between Home and Chat
+
+- When you click on the _Send message_ button, from the match overlay, you should be redirected to the Chat application for the Pet that you just matched with.
+- When you click on the _Back_ button from the Chat page, you should go back to the Home page.
+
+Hints:
+- The idea is to have a new file `Main.elm` that will contain **the only** `main` program (make it a `Navigation.program`). `Main.elm`'s functions (update,view,subscriptions,model) should delegate to the relative `Home.elm` and `Chat.elm` and then get mapped accordingly (`Cmd.map`, `Html.map`).
+- First try to _convert_ Home to work with `Main.elm`.
+- Then try to _convert_ Chat to work with `Main.elm` as well.
+- `Subscriptions` is a function that gets called by the `program` at the right time (will help you think about `WebSockets` in `Chat.elm`).
+- When both Home and Chat work with Main, you can navigate to Chat from Home's match overlay.
+
+# Further reading
+[Richard Feldman](https://twitter.com/rtfeldman) has written [a nice blog post](https://dev.to/rtfeldman/tour-of-an-open-source-elm-spa) on how he writes _real world_ applications, using the stuff he learned when writing a production Elm application for [NoRedInk](https://tech.noredink.com).
